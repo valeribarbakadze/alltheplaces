@@ -1,70 +1,90 @@
-from typing import AsyncIterator
+import re
+from typing import Any, Iterable
 
-from scrapy import Spider
-from scrapy.http import Request
+from scrapy import Selector, Spider
+from scrapy.http import Response
 
-from locations.geo import point_locations
-from locations.hours import OpeningHours
+from locations.categories import Categories, apply_category
 from locations.items import Feature
 from locations.user_agents import BROWSER_DEFAULT
 
+# Store detail URLs encode city, state, postcode and store number, e.g.
+# /tsc/store_Middletown-DE-19709_1206
+STORE_URL_PATTERN = re.compile(r"/tsc/store_(?P<city>.+)-(?P<state>[A-Z]{2})-(?P<postcode>\d{5})_(?P<ref>\d+)$")
+
 
 class TractorSupplySpider(Spider):
+    """
+    Tractor Supply's official store directory lists one page per state, and
+    each state page lists every store in that state with its address and
+    phone number. The store detail URL itself encodes the city, state,
+    postcode and official store number, which makes it the most reliable
+    identifier available from the directory.
+
+    Note: Tractor Supply serves HTTP 403 to datacentre IP ranges, so this
+    spider requires a residential proxy.
+    """
+
     name = "tractor_supply"
-    item_attributes = {"brand": "Tractor Supply Company", "brand_wikidata": "Q15109925"}
-    allowed_domains = ["tractorsupply.com"]
-    custom_settings = {
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-        "ROBOTSTXT_OBEY": False,
-        "DOWNLOAD_DELAY": 1.5,
-        "USER_AGENT": BROWSER_DEFAULT,
-    }
+    item_attributes = {"brand": "Tractor Supply Company", "brand_wikidata": "Q15109925", "country": "US"}
+    allowed_domains = ["slr.shop.tractorsupply.com"]
+    start_urls = ["https://slr.shop.tractorsupply.com/tsc/store-locations"]
+    custom_settings = {"ROBOTSTXT_OBEY": False, "DOWNLOAD_DELAY": 1.0, "USER_AGENT": BROWSER_DEFAULT}
+    requires_proxy = True
 
-    async def start(self) -> AsyncIterator[Request]:
-        base_url = "https://www.tractorsupply.com/wcs/resources/store/10151/zipcode/fetchstoredetails?responseFormat=json&latitude={lat}&longitude={lng}"
-
-        for lat, lon in point_locations("us_centroids_25mile_radius.csv"):
-            url = base_url.format(lat=lat, lng=lon)
-            yield Request(url=url, callback=self.parse)
-
-    def parse_hours(self, hours):
-        day_hour = hours.split("|")
-
-        opening_hours = OpeningHours()
-
-        for dh in day_hour:
-            try:
-                dh_left, dh_right = dh.split("=")
-                day = dh_left[:2]
-                open_time, close_time = dh_right.split("-")
-                opening_hours.add_range(
-                    day=day,
-                    open_time=open_time,
-                    close_time=close_time,
-                    time_format="%I:%M %p",
-                )
-            except Exception:
+    def parse(self, response: Response, **kwargs: Any) -> Any:
+        for href in set(response.xpath('//a[contains(@href, "/tsc/store-locations/")]/@href').getall()):
+            if href.rstrip("/").endswith("store-locations"):
                 continue
+            yield response.follow(href, callback=self.parse_state)
 
-        return opening_hours
+    def parse_state(self, response: Response) -> Iterable[Feature]:
+        seen = set()
+        for link in response.xpath('//a[contains(@href, "/tsc/store_")]'):
+            href = link.xpath("./@href").get("")
+            match = STORE_URL_PATTERN.search(href.split("?")[0])
+            if not match or match.group("ref") in seen:
+                continue
+            seen.add(match.group("ref"))
 
-    def parse(self, response):
-        data = response.json()
-        store_data = data["storesList"]
+            row = link.xpath("./ancestor::li[1]")
+            if not row:
+                row = link.xpath("./parent::*")
 
-        for store in store_data:
-            properties = {
-                "ref": store["stlocId"],
-                "name": store["storeName"],
-                "addr_full": store["addressLine"],
-                "city": store["city"],
-                "state": store["state"],
-                "postcode": store["zipCode"],
-                "phone": store["phoneNumber"],
-                "lat": store["latitude"],
-                "lon": store["longitude"],
-            }
+            item = Feature()
+            item["ref"] = match.group("ref")
+            item["branch"] = link.xpath("normalize-space(.)").get() or match.group("city").replace("-", " ")
+            item["city"] = match.group("city").replace("-", " ")
+            item["state"] = match.group("state")
+            item["postcode"] = match.group("postcode")
+            item["website"] = response.urljoin(href)
+            item["street_address"] = self.extract_street_address(row, item["city"], item["state"])
+            item["phone"] = self.extract_phone(row)
 
-            properties["opening_hours"] = self.parse_hours(store["storeHours"])
+            apply_category(Categories.SHOP_AGRARIAN, item)
 
-            yield Feature(**properties)
+            yield item
+
+    @staticmethod
+    def extract_phone(row: Selector) -> str | None:
+        for href in row.xpath('.//a[starts-with(@href, "tel:")]/@href').getall():
+            return href.removeprefix("tel:").strip()
+        return None
+
+    @staticmethod
+    def extract_street_address(row: Selector, city: str, state: str) -> str | None:
+        """
+        Rows render as: <branch link> <street> <newline> City, ST 12345
+        <newline> <phone>. The street is the first non-empty text node that is
+        not the branch name, the "City, ST ZIP" line, or a services link.
+        """
+        city_state = "{}, {}".format(city, state).lower()
+        for text in row.xpath("./text() | ./*/text()").getall():
+            text = " ".join(text.split())
+            if not text or text.lower().startswith(city_state):
+                continue
+            if re.fullmatch(r"[A-Za-z .'-]+,\s*[A-Z]{2}\s*\d{5}(-\d{4})?", text):
+                continue
+            if re.search(r"\d", text):
+                return text
+        return None
