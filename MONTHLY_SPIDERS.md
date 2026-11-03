@@ -122,13 +122,13 @@ project's own software, not as a data pipeline.
 | --- | --- | --- |
 | `the_palm` | 17 | 2026-11-03 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
+| `cyclone_anayas_us` | 5 | 2026-11-03 |
 
 `the_palm` carries no country suffix because one of its 17 restaurants is in Mexico
 City; the other 16 are in the US.
 
 Candidates held on per-merchant branches, each checked against upstream by brand
-and genuinely absent: `eatzis_us` (6), `cool_hand_lukes_us` (6),
-`cyclone_anayas_us` (5). Also clean on that check and ready when wanted:
+and genuinely absent: `eatzis_us` (6), `cool_hand_lukes_us` (6). Also clean on that check and ready when wanted:
 `abelardos_mexican_food`, `hh_bagels`, `one_stop_nutrition`, `the_great_frame_up`,
 `uno_pizzeria_and_grill`.
 

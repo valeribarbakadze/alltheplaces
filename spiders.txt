@@ -9,5 +9,6 @@
 # and the merchant's domain across locations/spiders/ finds those; searching for
 # the file name does not.
 
+cyclone_anayas_us
 tamollys_mexican_kitchen
 the_palm
