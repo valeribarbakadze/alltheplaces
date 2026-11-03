@@ -1,0 +1,12 @@
+# The spiders this branch carries, one per line.
+#
+# This is the list the workflow runs and the list a monthly run should cover.
+# Add a spider here when you add its file. Lines starting with # are ignored.
+#
+# Before adding one, check upstream by brand rather than by file name: a
+# merchant upstream already covers may be filed under another name, or inside a
+# spider that covers a group of brands at once. Searching for the Wikidata QID
+# and the merchant's domain across locations/spiders/ finds those; searching for
+# the file name does not.
+
+tamollys_mexican_kitchen
