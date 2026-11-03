@@ -10,3 +10,4 @@
 # the file name does not.
 
 tamollys_mexican_kitchen
+the_palm
