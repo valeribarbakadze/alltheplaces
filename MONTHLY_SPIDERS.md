@@ -125,11 +125,17 @@ project's own software, not as a data pipeline.
 | `midwood_smokehouse_us` | 6 | 2026-11-04 |
 | `seoul_taco_us` | 6 | 2026-11-04 |
 | `the_simple_greek_us` | 6 | 2026-11-04 |
+| `felipes_mexican_taqueria_us` | 6 | 2026-11-04 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
 `the_palm` carries no country suffix because one of its 17 restaurants is in Mexico
 City; the other 16 are in the US.
+
+`felipes_mexican_taqueria_us` publishes one position for two different
+restaurants, Uptown and Old Metairie, whose addresses are some four kilometres
+apart. Both are recorded as published and the spider warns, because the locator
+gives nothing to say which of the two the position belongs to.
 
 `eatzis_us` yields no coordinates. The markets' addresses link to Google places by
 CID, which carries no position, and nothing else on the page publishes one, so the
