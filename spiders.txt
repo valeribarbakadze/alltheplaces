@@ -10,5 +10,6 @@
 # the file name does not.
 
 cyclone_anayas_us
+eatzis_us
 tamollys_mexican_kitchen
 the_palm
