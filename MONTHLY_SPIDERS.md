@@ -131,11 +131,17 @@ project's own software, not as a data pipeline.
 | `natural_body_us` | 5 | 2026-11-04 |
 | `mitchells_fish_market_us` | 5 | 2026-11-04 |
 | `acme_oyster_house_us` | 5 | 2026-11-04 |
+| `arirang_hibachi_steakhouse_us` | 5 | 2026-11-04 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
 `the_palm` carries no country suffix because one of its 17 restaurants is in Mexico
 City; the other 16 are in the US.
+
+`arirang_hibachi_steakhouse_us` carries the brand as the site writes it,
+"Arirang Hibachi Steakhouse", without the "& Sushi" the merchant list adds. It
+yields no coordinates: the address links to a Google search for itself, naming no
+point.
 
 `acme_oyster_house_us` is marked `requires_proxy` for the same reason as
 `dukes_seafood_us`, on what looks like the same hosting: an intermittent
