@@ -122,6 +122,7 @@ project's own software, not as a data pipeline.
 | --- | --- | --- |
 | `the_palm` | 17 | 2026-11-03 |
 | `eatzis_us` | 6 | 2026-11-04 |
+| `midwood_smokehouse_us` | 6 | 2026-11-04 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
