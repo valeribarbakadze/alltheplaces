@@ -127,11 +127,18 @@ project's own software, not as a data pipeline.
 | `the_simple_greek_us` | 6 | 2026-11-04 |
 | `felipes_mexican_taqueria_us` | 6 | 2026-11-04 |
 | `dukes_seafood_us` | 6 | 2026-11-04 |
+| `cattle_baron_us` | 6 | 2026-11-04 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
 `the_palm` carries no country suffix because one of its 17 restaurants is in Mexico
 City; the other 16 are in the US.
+
+`cattle_baron_us` yields no coordinates: the only map on each page is an embed
+that searches Google for the restaurant by name rather than naming a point. It
+also publishes 88240 for both Hobbs and Las Cruces, which belongs to one of them
+at most, and the spider warns about that when it closes. It runs at a three second
+delay, which is what the site's robots.txt asks for.
 
 `dukes_seafood_us` is marked `requires_proxy`. Its host sometimes answers a
 datacenter address with a SiteGround captcha instead of the page, naming the
