@@ -126,11 +126,19 @@ project's own software, not as a data pipeline.
 | `seoul_taco_us` | 6 | 2026-11-04 |
 | `the_simple_greek_us` | 6 | 2026-11-04 |
 | `felipes_mexican_taqueria_us` | 6 | 2026-11-04 |
+| `dukes_seafood_us` | 6 | 2026-11-04 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
 `the_palm` carries no country suffix because one of its 17 restaurants is in Mexico
 City; the other 16 are in the US.
+
+`dukes_seafood_us` is marked `requires_proxy`. Its host sometimes answers a
+datacenter address with a SiteGround captcha instead of the page, naming the
+address's reputation as the reason; it refused a run of attempts and then served
+twelve requests in a row. It works without a proxy, but some monthly runs will
+collect nothing until a Zyte key is configured, and the workflow's empty-run check
+is what will say so.
 
 `felipes_mexican_taqueria_us` publishes one position for two different
 restaurants, Uptown and Old Metairie, whose addresses are some four kilometres

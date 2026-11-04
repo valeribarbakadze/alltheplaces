@@ -10,6 +10,7 @@
 # the file name does not.
 
 cyclone_anayas_us
+dukes_seafood_us
 eatzis_us
 felipes_mexican_taqueria_us
 midwood_smokehouse_us
