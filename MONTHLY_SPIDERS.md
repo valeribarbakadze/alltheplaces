@@ -130,11 +130,20 @@ project's own software, not as a data pipeline.
 | `cattle_baron_us` | 6 | 2026-11-04 |
 | `natural_body_us` | 5 | 2026-11-04 |
 | `mitchells_fish_market_us` | 5 | 2026-11-04 |
+| `acme_oyster_house_us` | 5 | 2026-11-04 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
 `the_palm` carries no country suffix because one of its 17 restaurants is in Mexico
 City; the other 16 are in the US.
+
+`acme_oyster_house_us` is marked `requires_proxy` for the same reason as
+`dukes_seafood_us`, on what looks like the same hosting: an intermittent
+SiteGround captcha for datacenter addresses over a permissive robots.txt. It
+follows the menu rather than the sitemap, which lists every restaurant twice -
+once plainly and once under a slug suffixed with its state - with both copies
+carrying the same address and each declaring itself canonical. Crawling the
+sitemap would report ten restaurants where there are five.
 
 `mitchells_fish_market_us` carries two brands. Four restaurants are Mitchell's
 Fish Market and the fifth trades as Columbus Fish Market, which only the slug of
