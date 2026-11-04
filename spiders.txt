@@ -12,5 +12,6 @@
 cyclone_anayas_us
 eatzis_us
 midwood_smokehouse_us
+seoul_taco_us
 tamollys_mexican_kitchen
 the_palm
