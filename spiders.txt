@@ -15,6 +15,7 @@ dukes_seafood_us
 eatzis_us
 felipes_mexican_taqueria_us
 midwood_smokehouse_us
+mitchells_fish_market_us
 natural_body_us
 seoul_taco_us
 tamollys_mexican_kitchen

@@ -129,11 +129,18 @@ project's own software, not as a data pipeline.
 | `dukes_seafood_us` | 6 | 2026-11-04 |
 | `cattle_baron_us` | 6 | 2026-11-04 |
 | `natural_body_us` | 5 | 2026-11-04 |
+| `mitchells_fish_market_us` | 5 | 2026-11-04 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
 `the_palm` carries no country suffix because one of its 17 restaurants is in Mexico
 City; the other 16 are in the US.
+
+`mitchells_fish_market_us` carries two brands. Four restaurants are Mitchell's
+Fish Market and the fifth trades as Columbus Fish Market, which only the slug of
+its page and its own text state - the page title calls every location Mitchell's.
+It yields no coordinates: the address links to a Google place by CID, which
+carries none.
 
 `natural_body_us` collects five of the seven spas its locator lists. The other
 two are not trading - one marked a former location, one shut for a rebuilding
