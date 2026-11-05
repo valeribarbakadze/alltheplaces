@@ -132,11 +132,18 @@ project's own software, not as a data pipeline.
 | `mitchells_fish_market_us` | 5 | 2026-11-04 |
 | `acme_oyster_house_us` | 5 | 2026-11-04 |
 | `arirang_hibachi_steakhouse_us` | 5 | 2026-11-04 |
+| `bad_brads_bbq_us` | 5 | 2026-11-05 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
 `the_palm` carries no country suffix because one of its 17 restaurants is in Mexico
 City; the other 16 are in the US.
+
+`bad_brads_bbq_us` records what each restaurant's ribbon states it has - dine-in,
+a bar, a patio, carryout - which differs between them: one of the five lists only
+carryout and catering. A sixth restaurant, in Ferndale, is named in the menu as
+opening in the summer of 2026 but has no page, so there is nothing to collect
+yet; expect the count to reach six.
 
 `arirang_hibachi_steakhouse_us` carries the brand as the site writes it,
 "Arirang Hibachi Steakhouse", without the "& Sushi" the merchant list adds. It
