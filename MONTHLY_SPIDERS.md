@@ -20,8 +20,8 @@ Spiders go on one at a time, each one run before it is committed.
 Whether upstream covers a merchant is **not** answered by whether
 `locations/spiders/<our_name>.py` exists there. Upstream may file the same
 merchant under a different name, or cover it inside a spider that handles a whole
-group of brands. Four spiders were dropped from an earlier attempt at this branch
-for exactly that reason:
+group of brands. Five spiders have been caught by this check rather than by
+their file names:
 
 | looked new | upstream already covered it as |
 | --- | --- |
@@ -29,6 +29,7 @@ for exactly that reason:
 | `shaws_us` | `albertsons`, which carries 17 brands including Shaw's |
 | `foodmaxx_us` | `save_mart_us`, which crawls `foodmaxx.com` |
 | `build_a_bear_us` | `build_a_bear_workshop_us` |
+| `home_depot_us` | `home_depot`, which reads homedepot.com through a locator host |
 
 So search for the merchant's Wikidata QID and its own domain, not its file name:
 
@@ -271,6 +272,17 @@ and genuinely absent: `cool_hand_lukes_us` (6). Also clean on that check and rea
 `abelardos_mexican_food`, `hh_bagels`, `one_stop_nutrition`, `the_great_frame_up`,
 `uno_pizzeria_and_grill`.
 
-Not yet brand-checked, and to be checked before adding: `claim_jumper_us`,
-`home_depot_us`, `pc_richard_and_son_us`. Needing a Zyte key before they run at all:
-`pep_boys`, `belk`, and those three. Needing Camoufox: `morettis_us`.
+Brand-checked on 2026-11-06 and genuinely absent upstream: `claim_jumper_us` and
+`pc_richard_and_son_us`. Neither domain appears anywhere in `origin/master`, neither
+brand appears there by name, and upstream's `landrys_seafood_us` carries only
+Landry's Seafood, so it does not cover Claim Jumper the way `albertsons` covers
+Shaw's. `home_depot_us` failed the same check and is in the table above.
+
+`claim_jumper_us` is clean on brand and still not for collecting: the site serves a
+challenge in place of its robots.txt, so its crawling policy cannot be read at all.
+That is not the same as `dukes_seafood_us` or `carmines`, where a permissive
+robots.txt reads fine and only a datacenter address is refused. An unreadable policy
+is a reason to stop; a refused address is a reason to run from somewhere else.
+
+Needing a Zyte key before they run at all: `pep_boys`, `belk`,
+`pc_richard_and_son_us`. Needing Camoufox: `morettis_us`.
