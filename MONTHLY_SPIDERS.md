@@ -135,12 +135,45 @@ project's own software, not as a data pipeline.
 | `bad_brads_bbq_us` | 5 | 2026-11-05 |
 | `burgers_and_beer_us` | 5 | 2026-11-05 |
 | `cafe_hollander_us` | 5 | 2026-11-05 |
+| `carmines` | 6 | 2026-11-05, 2 of 6 collected |
 | `copper_river_grill_us` | 5 | 2026-11-05 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
 `the_palm` carries no country suffix because one of its 17 restaurants is in Mexico
 City; the other 16 are in the US.
+
+`carmines` carries no country suffix either: one of its six restaurants is at
+Atlantis in the Bahamas and the other five are in the US. That one states its
+country by name rather than by code, which the country code pipeline resolves.
+The brand has no Wikidata item, so there is no `brand_wikidata`.
+
+**Only two of its six restaurants have been collected.** Cloudflare began
+answering this machine's address with a challenge partway through the work, and
+held it over forty minutes of spaced retries, so Times Square and Atlantis were
+read and Upper West Side, Atlantic City, Washington DC and Las Vegas were not.
+Those two parse correctly end to end. The other four are written against the
+same page template but have not been seen, so **check the first run**: it should
+collect six, and the spider warns on close if the sitemap yields fewer, warns
+per page if an address or a day cannot be read, and records no position rather
+than a guessed one. A run from a home address rather than a datacenter one is
+not challenged, so running it locally is what will confirm it. It is marked
+`requires_proxy` for that reason, though with no `ZYTE_API_KEY` set that is only
+a marker - robots.txt allows every crawler but three named SEO ones, so it is
+the address's reputation being refused rather than the crawl.
+
+It ignores the Restaurant block the pages publish in structured data, because
+that block contradicts the page it sits on. For Times Square it states Monday
+11:00 to 23:30 where the page's own table states 11:30 to 23:00, and its
+position is 192 metres from the pin the address links to. The block has been
+left behind - its map is a dead goo.gl short link and it names the restaurant's
+Google+ page - and the Bahamas page carries no block at all. What each page
+itself states is current, given per day, and there on all six, so the spider
+reads the page: the contact block, the hours table, and the destination pin out
+of the Google route its address links to. The Bahamas restaurant states one
+range for the whole week in words instead of a table, which is read only where
+the words name a range, since the same element elsewhere holds what a
+restaurant is open for rather than when.
 
 `cafe_hollander_us` runs at a ten second delay, which is the Crawl-delay both
 cafehollander.com and the parent group's site ask for. One page holds all five
