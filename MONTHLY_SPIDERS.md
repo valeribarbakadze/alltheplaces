@@ -134,11 +134,18 @@ project's own software, not as a data pipeline.
 | `arirang_hibachi_steakhouse_us` | 5 | 2026-11-04 |
 | `bad_brads_bbq_us` | 5 | 2026-11-05 |
 | `burgers_and_beer_us` | 5 | 2026-11-05 |
+| `cafe_hollander_us` | 5 | 2026-11-05 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
 `the_palm` carries no country suffix because one of its 17 restaurants is in Mexico
 City; the other 16 are in the US.
+
+`cafe_hollander_us` runs at a ten second delay, which is the Crawl-delay both
+cafehollander.com and the parent group's site ask for. One page holds all five
+restaurants, so that costs nothing. It yields no coordinates: the addresses link
+to a Google route stated as text and no map is embedded. All five keep the same
+hours, which is what each states for itself.
 
 `burgers_and_beer_us` reads one page of a site built with Wix, found by what it
 holds rather than by its name, since the builder names and renames pages itself:
