@@ -135,6 +135,7 @@ project's own software, not as a data pipeline.
 | `bad_brads_bbq_us` | 5 | 2026-11-05 |
 | `burgers_and_beer_us` | 5 | 2026-11-05 |
 | `cafe_hollander_us` | 5 | 2026-11-05 |
+| `copper_river_grill_us` | 5 | 2026-11-05 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
@@ -202,6 +203,30 @@ is what will say so.
 restaurants, Uptown and Old Metairie, whose addresses are some four kilometres
 apart. Both are recorded as published and the spider warns, because the locator
 gives nothing to say which of the two the position belongs to.
+
+`copper_river_grill_us` reads the one page that lists the restaurants. The site
+answers every path with its home page - /locations and /sitemap_index.xml come
+back byte for byte identical to / - so a path returning 200 says nothing, and
+the sitemap is what names locations.php. That page lists the five twice: once in
+blocks and again in the footer. The spider reads the blocks, because the footer
+is wrong about the phones - it states a South Carolina area code for the
+Kentucky restaurant in its text, and in its links it repeats two numbers and
+puts a third under the wrong area code again.
+
+Its coordinates come from the map each restaurant embeds, which the merchant
+publishes through Google My Maps and which the page states nowhere else. Each
+map holds a single pin and is named for the restaurant it belongs to, so the
+spider checks that name against the block the map sits in and records no
+position rather than a guessed one if a map ever holds anything else. All five
+pins came back distinct and in the right state. The restaurants have no pages
+of their own, so each `website` is the anchor on locations.php that the site's
+own menu links them by.
+
+All five state the same hours and all five state Wi-Fi, which is what each
+states for itself rather than anything brand-wide. Each block ends with the
+name of its operating partner, which the spider leaves alone: it names a person
+rather than the place. The brand has no Wikidata item, so there is no
+`brand_wikidata`.
 
 `eatzis_us` yields no coordinates. The markets' addresses link to Google places by
 CID, which carries no position, and nothing else on the page publishes one, so the
