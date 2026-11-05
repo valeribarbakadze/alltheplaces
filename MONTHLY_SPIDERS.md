@@ -133,11 +133,19 @@ project's own software, not as a data pipeline.
 | `acme_oyster_house_us` | 5 | 2026-11-04 |
 | `arirang_hibachi_steakhouse_us` | 5 | 2026-11-04 |
 | `bad_brads_bbq_us` | 5 | 2026-11-05 |
+| `burgers_and_beer_us` | 5 | 2026-11-05 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
 `the_palm` carries no country suffix because one of its 17 restaurants is in Mexico
 City; the other 16 are in the US.
+
+`burgers_and_beer_us` reads one page of a site built with Wix, found by what it
+holds rather than by its name, since the builder names and renames pages itself:
+it is called contact-5 today. The page lists a corporate office alongside the
+five restaurants, which the spider leaves out because it states a street with no
+town, state or postcode - and which repeats one restaurant's position as its own.
+The restaurants have no pages of their own, so the items carry no website.
 
 `bad_brads_bbq_us` records what each restaurant's ribbon states it has - dine-in,
 a bar, a patio, carryout - which differs between them: one of the five lists only
