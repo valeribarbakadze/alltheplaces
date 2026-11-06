@@ -142,6 +142,7 @@ project's own software, not as a data pipeline.
 | `granville_us` | 5 | 2026-11-06 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `roka_akor_us` | 5 | 2026-11-06 |
+| `third_love_us` | 4 | 2026-11-06 |
 | `tom_and_chee_us` | 5 | 2026-11-06 |
 | `wildberry_cafe_us` | 5 | 2026-11-06 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
@@ -463,6 +464,39 @@ The brand is recorded as the site titles itself, "Wildberry Pancakes and Cafe",
 rather than the shorter Wildberry Cafe of the merchant list; its own map embeds
 search Google for "Wildberry Pancakes & Cafe". It has no Wikidata item, so there
 is no `brand_wikidata`.
+
+`third_love_us` is the first spider here with a `brand_wikidata`, `Q54958385`.
+Every other merchant on this branch turned out to have no Wikidata item at all.
+The QID was checked rather than assumed: its one search hit is "ThirdLove,
+American lingerie company", and the Wikipedia article behind it gives the
+official website as www.thirdlove.com. It is absent from `origin/master`, as are
+the domain and the name.
+
+It is also the only shop here rather than a restaurant, so it carries
+`shop=clothes` with `clothes=underwear`, as upstream's `bravissimo` does.
+
+The locator lists four shops that are open and then eight more under "Coming
+Soon", named only by the shopping centre they are to stand in - Garden State
+Plaza, Del Amo, Roosevelt Field and so on - with no address and no page.
+Following the "Store Details" links is what divides them, since only an open
+shop has one. The sitemap is no help: it lists every page of a Shopify site, and
+the four shops sit among them under slugs with nothing in common - town-center,
+westfield-valley-fair, thirdlove-bay-area-california. Expect the count to rise as
+those eight open.
+
+Each shop's page carries a complete ClothingStore block - address with country,
+position, phone - so that is read rather than the locator's own text, which
+writes the four addresses three different ways and gives Santa Clara's with no
+comma between the town and the state. The structured data carries no hours,
+though, so those come from the block the page heads "Hours". Only that block: the
+footer states when the chain's customer service can be reached, "Monday - Sunday
+8AM - 7PM PT", which is not when a shop is open.
+
+The image every shop publishes is the same store-locator.png, the chain's
+picture rather than the shop's, so it is dropped; the chain's own accounts and
+contact address are not collected either. Everything that should differ between
+the four does: town, postcode, street, branch, phone, hours and position are all
+four of four distinct.
 
 `copper_river_grill_us` reads the one page that lists the restaurants. The site
 answers every path with its home page - /locations and /sitemap_index.xml come
