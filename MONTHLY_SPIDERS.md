@@ -141,6 +141,7 @@ project's own software, not as a data pipeline.
 | `duckworths_grill_and_taphouse_us` | 5 | 2026-11-06 |
 | `granville_us` | 5 | 2026-11-06 |
 | `heavenly_massage_us` | 5 | 2026-11-07 |
+| `james_coney_island_us` | 5 | 2026-11-07 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `roka_akor_us` | 5 | 2026-11-06 |
 | `third_love_us` | 4 | 2026-11-06 |
@@ -529,6 +530,53 @@ the country is stated as "United States" and left for the country code pipeline
 to resolve. The Chicago one is named "Chicago / Goldcoast", so its branch is
 Goldcoast; the other four are named for their town and carry none. The brand has
 no Wikidata item.
+
+`james_coney_island_us` reads the one page that lists the restaurants, and the
+reason it reads paragraphs rather than headings is worth knowing. The page nests
+a paragraph inside a heading - `<h4><p>5730 Hollister St.<br>Houston, TX
+77040</p></h4>` - which HTML does not allow, so the parser closes the heading
+and lifts the paragraph out beside it. Select the headings and five empty
+strings come back, for the addresses and the hours alike. The same will be true
+of any Elementor page that writes its text this way.
+
+The blocks are recognised by what they hold - one heading, one phone number and
+one address - rather than by any class, since the markup names nothing. That
+also keeps the corporate office out: the footer carries 1750 Stebbins Drive with
+a Google map link of its own, which would otherwise read as a sixth restaurant.
+It spells its state out in full, "Houston, Texas 77043", so the locality pattern
+never matches it either.
+
+**The branch names are left in the capitals the page uses**, which is a
+deliberate departure from `duckworths_grill_and_taphouse_us`, where capitals
+were put into ordinary case. Four of these five are places - Hollister,
+Meyerland, Woodlands, Humble - but the fifth is NASA, for the space centre it
+stands near, and ordinary case would spell that Nasa. Nothing on the site writes
+the five any other way: the Google place names are proper case for only two of
+them, one of which gives the town rather than the restaurant, and the ordering
+links are lowercase slugs. Humble carries no branch at all, its heading being
+the town the address already states.
+
+All five state the same hours, 11:00 to 21:00 every day, because the page gives
+that one range for Mon-Thur, for Fri-Sat and for Sunday alike. That may well
+mean the weekend was never updated, but it is what each states for itself.
+`delivery` and `takeaway` are recorded because the link to order by is labelled
+"Delivery / Pickup" - both words the merchant's own, which is why these are
+recorded where `duckworths_grill_and_taphouse_us` left a bare "Order Online"
+alone. The NASA one lists Uber Eats and DoorDash besides.
+
+It carries `brand_wikidata` `Q6131624`, which is the second on this branch after
+`third_love_us`. Wikimedia rate-limited the item lookup repeatedly, so the QID
+was established the other way round: the Wikipedia article at
+en.wikipedia.org/wiki/James_Coney_Island states the company, its Houston
+headquarters and jamesconeyisland.com as its site, and Wikipedia's own API gives
+that article's `wikibase_item` as Q6131624. That is a firmer link than matching a
+label, which is how `third_love_us` was checked. It is absent from
+`origin/master`.
+
+That article also records seventeen restaurants in February 2021, with closures
+through 2021 and 2022, against the five its infobox lists now and the five this
+spider collects. So this is a chain that has shrunk hard, and the count is worth
+watching downwards rather than up.
 
 `copper_river_grill_us` reads the one page that lists the restaurants. The site
 answers every path with its home page - /locations and /sitemap_index.xml come
