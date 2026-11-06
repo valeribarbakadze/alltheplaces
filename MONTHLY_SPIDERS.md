@@ -140,6 +140,7 @@ project's own software, not as a data pipeline.
 | `copper_river_grill_us` | 5 | 2026-11-05 |
 | `duckworths_grill_and_taphouse_us` | 5 | 2026-11-06 |
 | `granville_us` | 5 | 2026-11-06 |
+| `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
@@ -308,6 +309,49 @@ left out of the hours. No cuisine is recorded: the site calls the food
 "globally-inspired" and names no kitchen. The brand has no Wikidata item, so
 there is no `brand_wikidata`, and GRANVILLE is in capitals because that is how
 the brand writes itself, in its own structured data and its logo alike.
+
+`karinas_mexican_seafood_us` carries three brands across four restaurants.
+Bonita and Otay Ranch trade as Karina's Mexican Seafood, the Gaslamp Quarter one
+as Karina's Cantina, and the Mission Hills one as Karina's Ceviches & More. Each
+page says so only in its own prose - "Karina's Mexican Seafood in Bonita", "the
+vibrant and lively atmosphere of Karina's Cantina", "Karina's Ceviches & More
+offers casual al fresco or to go dining" - and nowhere a machine can read it, so
+the spider holds the three names against the four page slugs and warns if the
+site ever adds a fifth it does not know the name of. The group calls itself
+Karina's Seafood, in its page titles and its notice of copyright, which is not
+what any one of the four trades as. Each map embed searches Google for a
+different one of the three names, which is the other sign of the split.
+
+It runs at a twenty second delay, which is what robots.txt asks for and all it
+asks for. Following the menu rather than the sitemap keeps the crawl to five
+requests, so it finishes in a little over two minutes; reading the sixteen pages
+the sitemap lists to find the four would take five.
+
+It yields no coordinates: the only map on a page is an embed that searches Google
+for the restaurant by name, which names no point.
+
+The hours need care on both counts the page gets wrong. Notes on when the
+kitchen shuts sit between the rules at the Gaslamp one - "Monday - Thursday
+12pm-11:30pm", "*Kitchen closes 10:45pm", "Friday-Sunday 12pm-2am" - so those
+lines are passed over rather than stopping the reading. The happy hour comes
+last and runs over as many as three paragraphs of which only the first names it:
+"Happy Hour All Day", "Monday and 3pm-6pm", "Tuesday-Sunday". Reading stops at
+the paragraph that names it, because skipping only that one would let "Monday
+and 3pm-6pm" through as a rule. Two of the four shut after midnight, which ATP
+splits across the days by itself - Otay Ranch comes out as
+`Fr 11:00-24:00; Sa 00:00-01:00,11:00-24:00`.
+
+What each ribbon states is recorded and it differs between them: the Mission
+Hills one lists neither a bar nor private events where the other three list
+both. Private events are not recorded, being a service rather than something the
+place holds. Only the Gaslamp one gives an address of its own. None of the four
+links its phone number, so it is read from beside the telephone icon. No brand
+here has a Wikidata item, so none carries `brand_wikidata`.
+
+Worth watching: the local press has the group opening a seventh restaurant, and
+this site's menu lists four. Either the others trade under names that are not
+Karina's or they are listed somewhere this spider does not read, so do not take
+four as the whole of the group.
 
 `copper_river_grill_us` reads the one page that lists the restaurants. The site
 answers every path with its home page - /locations and /sitemap_index.xml come
