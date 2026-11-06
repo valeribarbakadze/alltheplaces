@@ -136,7 +136,7 @@ project's own software, not as a data pipeline.
 | `bad_brads_bbq_us` | 5 | 2026-11-05 |
 | `burgers_and_beer_us` | 5 | 2026-11-05 |
 | `cafe_hollander_us` | 5 | 2026-11-05 |
-| `carmines` | 6 | 2026-11-05, 2 of 6 collected |
+| `carmines` | 6 | never run whole; gated, see below |
 | `copper_river_grill_us` | 5 | 2026-11-05 |
 | `duckworths_grill_and_taphouse_us` | 5 | 2026-11-06 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
@@ -150,19 +150,23 @@ Atlantis in the Bahamas and the other five are in the US. That one states its
 country by name rather than by code, which the country code pipeline resolves.
 The brand has no Wikidata item, so there is no `brand_wikidata`.
 
-**Only two of its six restaurants have been collected.** Cloudflare began
-answering this machine's address with a challenge partway through the work, and
-held it over forty minutes of spaced retries, so Times Square and Atlantis were
-read and Upper West Side, Atlantic City, Washington DC and Las Vegas were not.
-Those two parse correctly end to end. The other four are written against the
-same page template but have not been seen, so **check the first run**: it should
-collect six, and the spider warns on close if the sitemap yields fewer, warns
-per page if an address or a day cannot be read, and records no position rather
-than a guessed one. A run from a home address rather than a datacenter one is
-not challenged, so running it locally is what will confirm it. It is marked
-`requires_proxy` for that reason, though with no `ZYTE_API_KEY` set that is only
-a marker - robots.txt allows every crawler but three named SEO ones, so it is
-the address's reputation being refused rather than the crawl.
+**As it stands this spider collects nothing, and two of its six restaurants are
+all that has ever been read.** Cloudflare served the pages to a plain client at
+first - Times Square and Atlantis were fetched and parse correctly end to end -
+and then began challenging, and has not stopped. The first diagnosis here was
+that a datacenter address was being refused and that a run from a home network
+would collect normally. That was wrong, and testing on 2026-11-06 from two
+different networks disproved it: a plain request gets 403 from both. The
+challenge is Cloudflare's managed kind, which answers any client that does not
+run JavaScript, so `scrapy crawl carmines` returns nothing wherever it runs.
+
+The parser is sound on what it has seen and the remaining four pages are written
+against the same template, but they have never been fetched. To collect this at
+all the pages have to come through something that runs JavaScript: a
+`ZYTE_API_KEY`, which is what the `requires_proxy` marker already asks for, or
+Camoufox, which upstream uses for 27 spiders. Nothing about the site's stated
+policy is the obstacle - robots.txt allows every crawler but three named SEO
+ones. The obstacle is the gate in front of it.
 
 It ignores the Restaurant block the pages publish in structured data, because
 that block contradicts the page it sits on. For Times Square it states Monday
