@@ -286,3 +286,23 @@ is a reason to stop; a refused address is a reason to run from somewhere else.
 
 Needing a Zyte key before they run at all: `pep_boys`, `belk`,
 `pc_richard_and_son_us`. Needing Camoufox: `morettis_us`.
+
+## Merchants whose robots.txt refuses this assistant
+
+Some sites name Anthropic's crawlers - `ClaudeBot`, `anthropic-ai`, `Claude-Web` -
+and disallow them, while allowing everything else under `User-agent: *`. On those,
+the spider can be written and run from here but the pages cannot be collected from
+here, so the content has to come from a crawl you run yourself.
+
+| merchant | robots.txt |
+| --- | --- |
+| Frozen Ropes, `frozenropes.com` | disallows the three named Anthropic agents |
+| Dos Caminos, `doscaminos.com` | same, plus a Cloudflare-managed block on 30-odd other AI crawlers; `User-agent: *` is `Allow: /` with `Content-Signal: search=yes,ai-train=no,use=reference` |
+
+Neither is a duplicate: checked 2026-11-06 against `origin/master` by domain and by
+name, and for Dos Caminos by its parent group BR Guest Hospitality and its sibling
+brands as well. Both are absent.
+
+This is a different thing again from `claim_jumper_us`, where the policy cannot be
+read, and from `dukes_seafood_us` and `carmines`, where it reads permissive and only
+a datacenter address is refused. Here the policy reads clearly and names us.
