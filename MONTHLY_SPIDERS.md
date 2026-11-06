@@ -141,6 +141,7 @@ project's own software, not as a data pipeline.
 | `duckworths_grill_and_taphouse_us` | 5 | 2026-11-06 |
 | `granville_us` | 5 | 2026-11-06 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
+| `roka_akor_us` | 5 | 2026-11-06 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
@@ -352,6 +353,46 @@ Worth watching: the local press has the group opening a seventh restaurant, and
 this site's menu lists four. Either the others trade under names that are not
 Karina's or they are listed somewhere this spider does not read, so do not take
 four as the whole of the group.
+
+**`roka_akor_us` ignores the site's structured data, which is not to be
+trusted.** Every page carries a Restaurant block listing all five restaurants
+at once, and it is wrong in ways that would have been copied straight into the
+output had the usual `LinkedDataParser` been pointed at it:
+
+- every telephone number in it ends 123-4567 - 480-123-4567, 312-123-4567,
+  415-123-4567 and so on - which is a placeholder, not a number;
+- it puts the Chicago restaurant at 111 West Illinois Street where the page
+  states 456 N Clark St, and numbers the Old Orchard one 4905 where the page
+  states 4999;
+- its hours are the chain's rather than each restaurant's, and only two of the
+  five location nodes carry hours of their own at all;
+- it quotes a review count of 75,018, images at /logo.png and /wagyu-steak.jpg,
+  a Yelp address of yelp.com/biz/roka-akor, and a menu with prices and calorie
+  counts.
+
+The pages themselves are maintained and correct, so the spider reads those: the
+block headed "Locations" for the address and phone, and the one headed "Hours".
+Do not "simplify" this spider onto the ld+json.
+
+The hours are written five ways between the five restaurants, and only the
+dining room's are the restaurant's own. Four of them head each set with what it
+is for - "Dining", "Dining Room", "Takeout", "Take Out & Delivery", "Happy
+Hour" - and give the days and times beneath, over two lines or on one divided
+by a bullet. The happy hour is stated **first** at Oak Brook, so the spider
+follows the headings rather than stopping at the first set that is not the
+dining room's. San Francisco heads nothing and instead names what each line is
+for: "Monday - Thursday", "Lounge: 4:30pm - 9:30pm", "Dining Room: 5:00pm -
+9:00pm". So every line is asked what it is for before what it says, and the
+lounge, the takeaway and the happy hour are all left out. "Monday - Thursday &
+Sunday" holds a span and a separate day at once, which is why the days are read
+by splitting on the ampersand first.
+
+Four of the five give a position, taken from the route the DIRECTIONS link ends
+at. Scottsdale's link goes to google.com.ua and names no point, so that one has
+no position and the spider warns; the map each page embeds is an address search,
+which names none either. Only the Old Orchard restaurant carries a `branch`: the
+other four are named for the town their address already states. The brand has no
+Wikidata item, so there is no `brand_wikidata`.
 
 `copper_river_grill_us` reads the one page that lists the restaurants. The site
 answers every path with its home page - /locations and /sitemap_index.xml come
