@@ -32,3 +32,4 @@ tamollys_mexican_kitchen
 the_palm
 the_simple_greek_us
 tom_and_chee_us
+wildberry_cafe_us

@@ -143,6 +143,7 @@ project's own software, not as a data pipeline.
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `roka_akor_us` | 5 | 2026-11-06 |
 | `tom_and_chee_us` | 5 | 2026-11-06 |
+| `wildberry_cafe_us` | 5 | 2026-11-06 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
@@ -426,6 +427,42 @@ Island amusement park, which is shut for the winter - its position falls nearest
 Kings Mills - so it is collected as a restaurant that exists but with no hours
 rather than seven closed days, which would read as permanent. The spider warns
 when it does that. Expect hours to appear there in the spring.
+
+`wildberry_cafe_us` reads the data the locator page was rendered from. The site
+is built with Next.js, which sends that data down as a run of JSON string
+literals pushed onto one array; the spider joins them back together and takes
+the array the locator was handed, counting brackets to lift it whole out of a
+much larger structure and stepping over strings so a bracket inside one cannot
+close it early. What comes back is better than anything on the page: street,
+town, state, postcode, position, phone, status and the hours day by day.
+
+There is nothing else to read. The site publishes no sitemap and no structured
+data at all, and its robots.txt answers **404** - a plain one from the site's own
+application, not a challenge standing in its way, so by RFC 9309 nothing is asked
+of a crawler. That is worth distinguishing from `claim_jumper_us`, where a
+challenge sits where robots.txt should be and the policy cannot be read at all.
+
+Two of the five are named "Chicago (Prudential Plaza)" and "Chicago (Water Tower
+Place)", so the branch is taken from within the brackets where the part before
+them is the town the address already states. The other three are named for their
+town alone and carry no branch. The `website` is built from each slug rather than
+published in the data; all five were checked and answer with the restaurant's own
+page.
+
+Each restaurant publishes a delivery link of its own and four of the five publish
+somewhere to book, so those carry `delivery=yes` and `reservation=yes`. The
+Prudential Plaza one simply offers no booking link, which is not the same as
+stating it takes none, so nothing is recorded against it. The links to order
+ahead are left alone, ordering online saying nothing certain about collecting in
+person. Dated exceptions - Christmas Day and the like - are published separately
+as special_hours and are left there: they name single days and would be wrong by
+next year. All five state the same hours, 07:00 to 14:00 every day, which is what
+each states for itself.
+
+The brand is recorded as the site titles itself, "Wildberry Pancakes and Cafe",
+rather than the shorter Wildberry Cafe of the merchant list; its own map embeds
+search Google for "Wildberry Pancakes & Cafe". It has no Wikidata item, so there
+is no `brand_wikidata`.
 
 `copper_river_grill_us` reads the one page that lists the restaurants. The site
 answers every path with its home page - /locations and /sitemap_index.xml come
