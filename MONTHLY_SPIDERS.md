@@ -460,5 +460,47 @@ name, and for Dos Caminos by its parent group BR Guest Hospitality and its sibli
 brands as well. Both are absent.
 
 This is a different thing again from `claim_jumper_us`, where the policy cannot be
-read, and from `dukes_seafood_us` and `carmines`, where it reads permissive and only
-a datacenter address is refused. Here the policy reads clearly and names us.
+read, and from `dukes_seafood_us`, where it reads permissive and only a datacenter
+address is refused. Here the policy reads clearly and names us.
+
+## Merchants behind a challenge that needs a browser
+
+A third kind, and the most common one. These sites publish a robots.txt that
+invites crawling and then put Cloudflare's **managed** challenge in front of every
+page. That challenge answers any client which does not run JavaScript, so it is not
+a datacenter address being refused: a plain `curl` and a plain Scrapy request are
+both turned away from any network, home ones included. Each was tested from two
+networks on 2026-11-06.
+
+| merchant | state |
+| --- | --- |
+| Carmine's, `carminesnyc.com` | spider written and committed; two of six restaurants ever collected, before the challenge armed. Permissive robots.txt reads fine. |
+| Fadó Irish Pub, `fadoirishpub.com` | not written. Six pubs named by the sitemap: atlanta, atlanta-midtown, chicago, columbus, johns-creek, philadelphia. |
+| Strong's Brick Oven Pizza, `strongsbrickovenpizza.com` | not written. Five restaurants named by the sitemap: lawrenceburg, newport, reading, union, westside. |
+
+Fadó and Strong's publish the same robots.txt, to the byte:
+
+```
+User-agent: *
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
+```
+
+and on both, `/sitemap.xml` is the one path the challenge lets through, which is
+how the restaurants above are known. Everything else - the pages, and
+`/wp-json`, `/feed`, `/rss`, `/graphql`, `/locations.json`, `/sitemap_index.xml` -
+is answered with the challenge. The two are almost certainly the same hosting.
+
+None of the three is a duplicate; all were brand-checked against `origin/master`
+by domain and by name, and Fadó by its sibling brands as well.
+
+**`carmines` has been taken off `spiders.txt`** while this stands. The spider file
+stays, and the line goes back in the moment the pages can be fetched. It was
+removed because a spider that is certain to collect nothing would fail the
+workflow's empty-run check every month, and that check is worth keeping meaningful.
+
+To collect any of the three the pages have to come through something that runs
+JavaScript: a `ZYTE_API_KEY`, or Camoufox, which upstream uses for 27 spiders and
+which `morettis_us` already waits on. Camoufox is free; a Zyte key is not. Neither
+has been set up here, and the assistant will not point a browser engine at a bot
+challenge on its own account - that is a decision to take deliberately, not one to
+arrive at by default.
