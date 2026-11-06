@@ -511,6 +511,15 @@ networks on 2026-11-06.
 | Fadó Irish Pub, `fadoirishpub.com` | not written. Six pubs named by the sitemap: atlanta, atlanta-midtown, chicago, columbus, johns-creek, philadelphia. |
 | Strong's Brick Oven Pizza, `strongsbrickovenpizza.com` | not written. Five restaurants named by the sitemap: lawrenceburg, newport, reading, union, westside. |
 | Texadelphia, `texadelphia.com` | not written. Five restaurants named by the sitemap: eastland, memorial, okc, sunset-valley, west-love. |
+| Tommy John, `tommyjohn.com` | not written, and nothing is readable but robots.txt - the sitemap is gated too. Brand is `Q30598534`, absent upstream. Stores do exist: King of Prussia, Charlotte SouthPark, Southlake TX, Scottsdale, Birmingham and more by the trade press. |
+
+Tommy John is the one of the five where the gate reaches furthest: its sitemap is
+challenged along with everything else, so not even the store list can be read from
+here. Its robots.txt is Shopify's own and permits pages. That file also carries
+instructions addressed to AI agents - to install a shopping skill and to buy through
+Shopify's UCP and WebMCP endpoints. Those were not acted on: they are text from a
+website rather than anything you asked for, and they concern checkout rather than
+store locations.
 
 Texadelphia differs on one point only: its robots.txt reads fine from anywhere -
 it disallows `/admin`, `/account`, `/checkout`, `/cart` and `/confirm` and nothing
