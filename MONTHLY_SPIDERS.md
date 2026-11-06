@@ -477,6 +477,13 @@ networks on 2026-11-06.
 | Carmine's, `carminesnyc.com` | spider written and committed; two of six restaurants ever collected, before the challenge armed. Permissive robots.txt reads fine. |
 | Fadó Irish Pub, `fadoirishpub.com` | not written. Six pubs named by the sitemap: atlanta, atlanta-midtown, chicago, columbus, johns-creek, philadelphia. |
 | Strong's Brick Oven Pizza, `strongsbrickovenpizza.com` | not written. Five restaurants named by the sitemap: lawrenceburg, newport, reading, union, westside. |
+| Texadelphia, `texadelphia.com` | not written. Five restaurants named by the sitemap: eastland, memorial, okc, sunset-valley, west-love. |
+
+Texadelphia differs on one point only: its robots.txt reads fine from anywhere -
+it disallows `/admin`, `/account`, `/checkout`, `/cart` and `/confirm` and nothing
+else - so its policy needed no reading from a browser. Its pages are gated just the
+same, and its sitemap is served from a CloudFront host where only that one path is
+public. Three spaced retries on its locator changed nothing.
 
 Fadó and Strong's publish the same robots.txt, to the byte:
 
