@@ -139,6 +139,7 @@ project's own software, not as a data pipeline.
 | `carmines` | 6 | never run whole; gated, see below |
 | `copper_river_grill_us` | 5 | 2026-11-05 |
 | `duckworths_grill_and_taphouse_us` | 5 | 2026-11-06 |
+| `granville_us` | 5 | 2026-11-06 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
@@ -269,6 +270,44 @@ so there is no `brand_wikidata`.
 Third-party directories list a sixth restaurant at Ballantyne that the locator does
 not. Rea Farms stands in that part of Charlotte, so it may be the same place under
 an older name; the spider collects what the locator publishes, which is five.
+
+`granville_us` reads the home page, which is also where the menu's "Contact &
+Locations" points - the sitemap lists eight pages and no locator among them. The
+page is built with Wix, which writes each restaurant as two blocks in a row: one
+holding nothing but a heading, the next holding the hours, address, phone and
+email. The spider pairs them by that order and takes a pair only where the
+second block states an address, so a heading that is not a restaurant's is
+passed over.
+
+Wix also breaks a line across spans wherever its styling changes, so the text
+of a block has to be joined with nothing between its parts rather than with
+spaces. Joined with spaces, three of the five addresses come out misspelt -
+"11136 Magnolia Blv d", "2 70 South Lake Ave" - and so do the hours, as
+"10p m". That is why the spider has its own text helper instead of the usual
+one.
+
+**It records no coordinates, deliberately.** Every one of the five blocks links
+its first line to the same Google place, the Burbank restaurant's, so the link
+inside a block says nothing about the restaurant the block is for: a spider that
+read it would put all five at one point. Three blocks carry a second link of
+their own, but those name a map centred at zoom 15 rather than a pin, and the
+other two carry none. A page whose links have been pasted about like that is not
+one to take a position from, so the five items are address-only. Do not "fix"
+this by picking up the link in the block.
+
+The addresses themselves are written two ways: four put the street and the town
+on one line with no comma between them, and North Hollywood gives the street a
+line of its own. The town is found by matching the heading against the end of
+the line, so the street is whatever stands before it. Four restaurants link
+their phone number and North Hollywood writes it as plain text, which is read
+from the line it heads "Tel:". Pasadena states "No Reservations. First-Come,
+First-Served" where the other four state "Walk-In or Reservations", so that one
+carries `reservation=no` and the rest `yes` - stated outright on both sides
+rather than merely left unsaid. The page's happy hour and weekend brunch are
+left out of the hours. No cuisine is recorded: the site calls the food
+"globally-inspired" and names no kitchen. The brand has no Wikidata item, so
+there is no `brand_wikidata`, and GRANVILLE is in capitals because that is how
+the brand writes itself, in its own structured data and its logo alike.
 
 `copper_river_grill_us` reads the one page that lists the restaurants. The site
 answers every path with its home page - /locations and /sitemap_index.xml come
