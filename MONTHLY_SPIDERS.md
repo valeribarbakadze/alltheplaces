@@ -140,6 +140,7 @@ project's own software, not as a data pipeline.
 | `copper_river_grill_us` | 5 | 2026-11-05 |
 | `duckworths_grill_and_taphouse_us` | 5 | 2026-11-06 |
 | `granville_us` | 5 | 2026-11-06 |
+| `heavenly_massage_us` | 5 | 2026-11-07 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `roka_akor_us` | 5 | 2026-11-06 |
 | `third_love_us` | 4 | 2026-11-06 |
@@ -497,6 +498,37 @@ picture rather than the shop's, so it is dropped; the chain's own accounts and
 contact address are not collected either. Everything that should differ between
 the four does: town, postcode, street, branch, phone, hours and position are all
 four of four distinct.
+
+`heavenly_massage_us` reads the WP Store Locator the site runs. The locator
+page holds no spas - the plugin asks for them afterwards - so the spider reads
+the locator's own settings for the point it searches from, then asks the plugin
+for the spas the way the page itself does. That endpoint is
+/wp-admin/admin-ajax.php, which is the one path under /wp-admin/ that robots.txt
+allows; everything else there is disallowed and is left alone. It runs at a ten
+second delay, which robots.txt asks for, and three requests collect the lot.
+
+**It cross-checks its own coverage, which is the point worth keeping.** The
+plugin only answers a search within a radius, and refuses one wider than its own
+menu offers - 500 miles. All five spas are in Illinois and well inside that, but
+a spa opened further off would simply not come back, with nothing going wrong to
+show it. So the spider first reads /wp-json/wp/v2/wpsl_stores, where the spas are
+a post type of their own: that lists every one of them, though it carries none of
+their details. If the radius search misses anything that list names, the spider
+logs an error naming the spas it did not reach. Expect that to be how a sixth
+somewhere distant announces itself.
+
+The hours are stored in two different fields. Four spas fill in the one meant for
+them, "Mon-Fri 9:00am - 10:00pm"; Mount Prospect leaves it empty and puts its
+hours in the description instead, spelt out in full and with its times divided by
+"to" rather than a dash - "Monday - Friday 9:00am to10:00pm", with no space
+before the closing time. So whichever field reads as hours is the one used.
+
+Every spa gives the chain's home page as its own website, so no `website` is
+recorded. Each has a phone number and an email address of its own, which are, and
+the country is stated as "United States" and left for the country code pipeline
+to resolve. The Chicago one is named "Chicago / Goldcoast", so its branch is
+Goldcoast; the other four are named for their town and carry none. The brand has
+no Wikidata item.
 
 `copper_river_grill_us` reads the one page that lists the restaurants. The site
 answers every path with its home page - /locations and /sitemap_index.xml come
