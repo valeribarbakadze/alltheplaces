@@ -18,6 +18,7 @@ carmines
 cattle_baron_us
 copper_river_grill_us
 cyclone_anayas_us
+duckworths_grill_and_taphouse_us
 dukes_seafood_us
 eatzis_us
 felipes_mexican_taqueria_us

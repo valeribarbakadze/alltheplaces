@@ -138,6 +138,7 @@ project's own software, not as a data pipeline.
 | `cafe_hollander_us` | 5 | 2026-11-05 |
 | `carmines` | 6 | 2026-11-05, 2 of 6 collected |
 | `copper_river_grill_us` | 5 | 2026-11-05 |
+| `duckworths_grill_and_taphouse_us` | 5 | 2026-11-06 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
@@ -237,6 +238,33 @@ is what will say so.
 restaurants, Uptown and Old Metairie, whose addresses are some four kilometres
 apart. Both are recorded as published and the spider warns, because the locator
 gives nothing to say which of the two the position belongs to.
+
+`duckworths_grill_and_taphouse_us` follows the locator rather than the
+sitemap, which lists a beer list for each restaurant but none of the restaurants
+themselves. Their pages sit under /location/ where the locator sits under
+/locations/. Nothing is published in structured data: the one ld+json block on
+every page is an empty object.
+
+Its coordinates come from the street level view each page embeds, so they give the
+point the photograph was taken from - out on the road - rather than the building.
+That is the only position published: the address links to a Google place by CID,
+which carries none. ATP's own `extract_google_position` reads these, and all five
+came back distinct and in the right part of North Carolina.
+
+Four of the five are headed in capitals, which is styling rather than spelling, so
+a heading in capitals is recorded in the ordinary case; SouthPark is not in capitals
+and keeps its own. Huntersville and Mooresville are headed with the town they stand
+in, which the address already states, so those two carry no `branch`. Each
+restaurant keeps its own Facebook page, which is recorded; the Instagram account in
+the same block is the chain's and is not. All five state the same hours, which is
+what each states for itself. Each also states that reservations are accepted Monday
+to Thursday, which is not recorded - the tag cannot say "on four days", and a plain
+yes would claim three days the restaurant does not. The brand has no Wikidata item,
+so there is no `brand_wikidata`.
+
+Third-party directories list a sixth restaurant at Ballantyne that the locator does
+not. Rea Farms stands in that part of Charlotte, so it may be the same place under
+an older name; the spider collects what the locator publishes, which is five.
 
 `copper_river_grill_us` reads the one page that lists the restaurants. The site
 answers every path with its home page - /locations and /sitemap_index.xml come
