@@ -142,6 +142,7 @@ project's own software, not as a data pipeline.
 | `granville_us` | 5 | 2026-11-06 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `roka_akor_us` | 5 | 2026-11-06 |
+| `tom_and_chee_us` | 5 | 2026-11-06 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
@@ -393,6 +394,38 @@ no position and the spider warns; the map each page embeds is an address search,
 which names none either. Only the Old Orchard restaurant carries a `branch`: the
 other four are named for the town their address already states. The brand has no
 Wikidata item, so there is no `brand_wikidata`.
+
+`tom_and_chee_us` is the easy kind: the SOCi locator at
+locations.tomandchee.com publishes a complete Restaurant block per restaurant -
+address with country, real phone, real position, hours by the day - so the
+spider is a `StructuredDataSpider` over the locator's own sitemap and little
+else. Both robots.txt files, the site's and the locator's, allow everything.
+
+Getting to the locator is the only awkward part. tomandchee.com publishes no
+sitemap, its locator page holds no restaurants (SOCi draws them in afterwards),
+and the three state links in its own menu - /ky, /oh, /ok - all answer 404. The
+locator subdomain is named once in the page source, and its sitemap lists the
+five restaurants among nine directory pages. A restaurant's page is one segment
+ending in twelve hex characters, which is what the sitemap rule matches; the
+captured slug is the ref, because the structured data's own @id is the whole
+address. One slug carries an "e121" in front of its state, which is the
+locator's doing and is left as published.
+
+Three things on the page are the chain's rather than a restaurant's and are not
+collected: contact@goldstarchili.com, which every one of the five states, and
+the chain's own Facebook, Twitter and Instagram accounts. That address is a
+reminder that Gold Star Chili owns the brand - and the Cincinnati restaurant on
+Beechmont Avenue is named "Gold Star + Tom & Chee", trading alongside Gold Star
+itself, which is kept as its `branch`. The other four are named for the town
+they stand in, so three of those carry no branch; the Oklahoma City one is
+named OKC, which is kept, being what the locator calls it.
+
+The restaurant at 6300 Kings Island Drive states every day of the week closed
+and publishes no hours at all in its structured data. It stands inside the Kings
+Island amusement park, which is shut for the winter - its position falls nearest
+Kings Mills - so it is collected as a restaurant that exists but with no hours
+rather than seven closed days, which would read as permanent. The spider warns
+when it does that. Expect hours to appear there in the spring.
 
 `copper_river_grill_us` reads the one page that lists the restaurants. The site
 answers every path with its home page - /locations and /sitemap_index.xml come
