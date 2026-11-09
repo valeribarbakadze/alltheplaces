@@ -12,6 +12,7 @@
 acme_oyster_house_us
 arirang_hibachi_steakhouse_us
 bad_brads_bbq_us
+bulldog_ale_house_us
 burgers_and_beer_us
 cafe_hollander_us
 cattle_baron_us

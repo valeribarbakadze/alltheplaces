@@ -134,6 +134,7 @@ project's own software, not as a data pipeline.
 | `acme_oyster_house_us` | 5 | 2026-11-04 |
 | `arirang_hibachi_steakhouse_us` | 5 | 2026-11-04 |
 | `bad_brads_bbq_us` | 5 | 2026-11-05 |
+| `bulldog_ale_house_us` | 1 | 2026-11-09 |
 | `burgers_and_beer_us` | 5 | 2026-11-05 |
 | `cafe_hollander_us` | 5 | 2026-11-05 |
 | `carmines` | 6 | never run whole; gated, see below |
@@ -671,6 +672,61 @@ gives marketing@ramsheadgroup.com as its email, which is the group's and not the
 venue's, so no email is collected either. The Roadhouse's coordinates
 reverse-geocode to Crownsville against the Annapolis it states: 1773 Generals
 Highway is in Crownsville with an Annapolis postal address, so both are right.
+
+`bulldog_ale_house_us` collects **one** restaurant, and the one is the point.
+The site publishes `-location/` pages for four - Bolingbrook, Carol Stream,
+Lansing and New Lenox - all four reachable, all four carrying a street address,
+a phone number, a full week of hours and a Yelp waitlist widget. Three of them
+are closed.
+
+New Lenox, at the 2387 Joliet Highway the page still gives, closed "effective
+immediately" in December 2023, and a different restaurant was slated for the
+unit. Carol Stream, at the 1021 Fountain View Dr. the page still gives, is
+marked closed by Yelp as of October 2026 and by Foursquare and MapQuest as well.
+Bolingbrook, at 157 S. Weber Road, is marked closed by Foursquare. North Aurora
+was open alongside them in December 2023 and its page has since been deleted
+outright, so pages do get removed here - just not reliably, and not these three.
+
+**So the sitemap is the wrong source for this merchant and the navigation is the
+right one.** The site's own Locations menu offers exactly one restaurant,
+Lansing IL, and that is what the spider reads: the menu's `-location/` links
+from the home page. Every other menu on the site - Menu, Order Online,
+Fundraisers, Contact, Employment - likewise offers Lansing alone, and no
+`-location/` link for any other restaurant appears anywhere on the home page.
+The menu is the surface the merchant keeps current; the sitemap is the one it has
+let rot. A `SitemapSpider` over `-location/` was written first and collected all
+four, which is how the three stale pages came to light: the count looked
+plausible and the addresses were all distinct, and only checking the chain
+against the outside world showed three of them were for restaurants that no
+longer exist.
+
+Nothing excludes the three by name. The spider cannot tell a closed restaurant
+from an open one by reading its page - they are indistinguishable, which is the
+whole difficulty - so it does not try, and it does not record them with an
+`end_date` either, because the merchant publishes no closure date and taking one
+from a news story is not collecting. If Bolingbrook reopens and returns to the
+menu, the spider picks it up with no change. If the menu is ever restructured so
+that it names no restaurant, the spider logs an error rather than quietly
+yielding nothing.
+
+The hours are read by recognising a line that opens with a day name rather than
+by where the line sits, because the pages disagree about that: on three of them
+"Hours:" is an `<h5>` beside the address block, and on Lansing's - which doubles
+as the site's home page and is laid out differently - it is a paragraph inside
+it, with the "Address:" label inside the block too. Keying on `sanitise_day`
+reads both. All four pages state the same hours, 11:00 to 22:00 on Monday, to
+23:00 Tuesday to Thursday, to midnight Friday and Saturday and to 22:00 on
+Sunday.
+
+No position is recorded: the Elementor map widget embeds
+`maps.google.com/maps?q=<the address as text>`, which carries no coordinates,
+and geocoding it is not ours to do. No branch either - the one restaurant's name
+is its town, which `city` already states. The brand has no Wikidata item and no
+NSI entry, so there is no `brand_wikidata`, and `bulldogalehouse.com` appears
+nowhere in `origin/master`. The category is `restaurant` rather than `pub` or
+`bar`, following upstream's `millers_ale_house` and `sedona_taphouse_us`, which
+are the closest things to this and both sit at `restaurant`; no cuisine is
+recorded, the site describing itself only as "Food & Brews".
 
 `on_the_border_us` is the first on this branch for a chain that used to be
 large. On The Border ran around a hundred restaurants, filed Chapter 11 in March
