@@ -125,6 +125,7 @@ project's own software, not as a data pipeline.
 | `eatzis_us` | 6 | 2026-11-04 |
 | `midwood_smokehouse_us` | 6 | 2026-11-04 |
 | `seoul_taco_us` | 6 | 2026-11-04 |
+| `stefaninas_pizzeria_us` | 4 | 2026-11-10 |
 | `the_simple_greek_us` | 6 | 2026-11-04 |
 | `felipes_mexican_taqueria_us` | 6 | 2026-11-04 |
 | `dukes_seafood_us` | 6 | 2026-11-04 |
@@ -975,6 +976,66 @@ nowhere in `origin/master`. The category is `restaurant` rather than `pub` or
 `bar`, following upstream's `millers_ale_house` and `sedona_taphouse_us`, which
 are the closest things to this and both sit at `restaurant`; no cuisine is
 recorded, the site describing itself only as "Food & Brews".
+
+`stefaninas_pizzeria_us` reads four pizzerias around St. Charles County,
+Missouri, from the `-location/` pages its sitemap names, and the two things
+worth keeping about it are a scare that turned out to be nothing and an hours
+bug that was something.
+
+**The scare: a fifth location that does not exist.** The sitemap carries nine
+pages beginning `veterans-memorial-` - a lunch menu, a dinner menu, pizza,
+pasta, desserts and so on - with no `-location/` page among them, and
+`/veterans-memorial-location/` answers 301. That looks exactly like
+`bulldog_ale_house_us`, where pages outlived a closed restaurant. It is not:
+**Veterans Memorial is a street.** The O'Fallon restaurant stands at 8645
+Veterans Memorial Pkwy, and those are its menus under an older naming scheme,
+which the 301 confirms by redirecting to one of them. Four is the number, and
+the home page's own Locations menu lists the same four.
+
+**The bug: "Noon" is not a time the hours parser reads, and a rule naming it is
+dropped whole.** Lake St. Louis and Jungermann both state "Sunday: Noon-9pm",
+and read as published both came back with no Sunday at all - not a wrong
+Sunday, an absent one, which is the kind of loss that leaves nothing behind to
+notice. Rewriting "Noon" as "12pm" gives the `Su 12:00-21:00` meant. "Closed"
+needs no such help: `CLOSED_EN` holds it, so Zumbehl's "Sunday: Closed" reads
+as `Su closed` on its own, and the first draft of the filter here wrongly
+excluded that line for having no am or pm in it. Feed the parser every line of
+the block and it handles the closed day itself.
+
+A leading "Open " is stripped from the first rule of each block, that being how
+each is written: "Open Mon-Thurs 11am-9pm".
+
+**Every page's footer lists all four restaurants** with their addresses and
+phone numbers, in white text, so reading the page at large would give each
+record four addresses to choose between. Both blocks are instead taken from the
+Avada heading standing above them - `Address` and `Order by Phone` - which is
+the same heading-anchored approach `aquarium_restaurants_us` uses on Denver and
+`raffertys_pizza_us` on its Webflow pages, and it is what the generated
+`fusion-text-1` class names would not survive. The phone comes from the page's
+one `tel:` link rather than from the footer's four.
+
+Coordinates come from each page's Google Maps embed, which carries them as
+`!2d` for longitude and `!3d` for latitude, and all four land in the town the
+page states - St. Charles, St. Peters, Lake Saint Louis and O'Fallon all
+matching exactly on a reverse-geocode, which is a cleaner result than most on
+this branch. Branch names are kept only where they are not the town, so
+Jungermann and Zumbehl carry one, both being named for their street while
+trading in St. Peters and St. Charles, and O'Fallon and Lake St. Louis carry
+none.
+
+One thing to know if this is matched on strings: **O'Fallon's `city` holds a
+curly apostrophe**, `O’Fallon`, because that is how the site writes it and no
+pipeline normalises quotes. The brand is written with a straight one, as
+upstream's brand strings are.
+
+The site's own title is "Stefanina's Pizzeria O'Fallon Missouri", which is the
+WordPress title with a town bolted on for search and wrong for three of the
+four, so `brand` is "Stefanina's Pizzeria". The brand has no Wikidata item and
+no NSI entry, and nothing for `stefaninas` or `stefanina` appears in
+`origin/master`. Incidentally the site still carries the Avada theme's demo
+portfolio - four plumbing jobs, including a wet-room construction and a
+commercial maintenance contract - in its own sitemap. The `-location/` rule
+does not reach them.
 
 `raffertys_pizza_us` is the shortest spider on this branch at 46 lines, and it is
 short because the site is well built rather than because anything was skipped.
