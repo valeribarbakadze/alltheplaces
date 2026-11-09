@@ -147,6 +147,7 @@ project's own software, not as a data pipeline.
 | `hoffbrau_steak_and_grill_house_us` | 4 | 2026-11-10 |
 | `james_coney_island_us` | 5 | 2026-11-07 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
+| `kirbys_steakhouse_us` | 4 | 2026-11-10 |
 | `new_orleans_hamburger_and_seafood_us` | 5 | 2026-11-09 |
 | `on_the_border_us` | 4 | 2026-11-09 |
 | `rams_head_group_us` | 6 | 2026-11-09 |
@@ -675,6 +676,71 @@ gives marketing@ramsheadgroup.com as its email, which is the group's and not the
 venue's, so no email is collected either. The Roadhouse's coordinates
 reverse-geocode to Crownsville against the Annapolis it states: 1773 Generals
 Highway is in Crownsville with an Annapolis postal address, so both are right.
+
+`kirbys_steakhouse_us` was asked for as "Kirby's Prime Steakhouse" and is filed
+under the name the merchant's own site uses, which is **"Kirby's Steakhouse"**.
+"Prime Steakhouse" appears nowhere on kirbyssteakhouse.com - not in a title, not
+in a heading, not in the `Organization` structured data, which names it "Kirby's
+Steakhouse" - and the only "prime" on the site is its gift-card link to
+`quickgifts.com/merchant/kirbys-prime-steakhouse/`. OpenTable lists the
+restaurants as `kirbys-prime-steakhouse-southlake` and so on, so both names are
+the merchant's; the own-site name won. **Search for either when checking this
+brand against upstream.** Neither is there: nothing for `kirbyssteakhouse` or
+`kirby` in `origin/master` beyond a Tendring address spider, and no Wikidata or
+NSI entry by domain or label, so there is no `brand_wikidata`.
+
+Four restaurants, found through the site's own Locations menu, whose remaining
+entry is Mickey Mantle's OKC - a different brand of the same group, on its own
+domain, and excluded by taking only same-host links. Dallas closed for good in
+2015, so four is the whole chain rather than a shrunken one.
+
+**The page carries a demo widget with a New York address and a New York phone
+number, and both appear as visible text on all four pages.** The Elementor
+template left `20 W 50th St, New York,` and `(212) 222-4444` in a reservation
+block, and an OpenTable line adds a shared `(832) 527-6515`. So the first
+phone-shaped line on the page is wrong three ways over. Everything is instead
+read from the footer `Contact Info` block downwards, which holds each
+restaurant's own number, its own mailbox and its own address; the placeholders
+all sit above it. The fake address could not have been picked up anyway, having
+no postcode for the address pattern to anchor on, but the phone would have been.
+
+**Nothing on the page divides the street from the town.** The addresses read
+`123 N. Loop 1604 E. San Antonio, TX 78232` - one comma, and it falls between
+town and state. Town names here run to one word or two and the streets end in
+`E.`, `Hwy.114`, `Pl` and `Drive`, so no rule about suffixes or capitals
+separates them. What does is the page's own `<title>`: it names the place, and
+where the address ends with that name the split is a verified match rather than
+a guess. San Antonio, Southlake and The Woodlands all split that way. WinStar's
+title names its casino instead, so its street and town are left unsplit, it
+keeps `WinStar Casino` as its `branch`, and `addr_full` carries the published
+line in full - which every one of the four gets, so nothing is lost either way.
+States are written `TX`, `Texas`, `Texas` and `OK`, so a name longer than two
+characters is title-cased for the state pipeline, as in `aquarium_restaurants_us`.
+
+**The hours needed three separate corrections and the first is the one that
+matters.** Every range is written with no meridiem on its opening time - "5 -
+9pm" - and read as published that gives `05:00-21:00`, a steakhouse open at five
+in the morning. So a bare opening time takes the closing one's am or pm, which
+turns it into the `17:00-21:00` that is meant. The substitution only fires where
+the opening time has no meridiem of its own, so `11am-3pm` and `3 pm - 10 pm`
+pass through untouched. Second, `&` is rewritten as `and` before parsing,
+because `DELIMITERS_EN` holds one and not the other and "Fri & Sat" otherwise
+reads as Saturday alone - the fix taken from
+`hoffbrau_steak_and_grill_house_us`. Third, WinStar states the Mickey Mantle
+Lounge's hours beside the dining room's, and the Woodlands and Southlake state a
+bar opening, a happy hour and a cigar lounge, so a rule counts only where its
+days sit before the colon and only under a label naming the brand or under no
+label at all. That keeps WinStar's `Kirby's Dining Room:` and drops its
+`Mickey Mantle Lounge:`, which opens two hours earlier and closes later.
+
+No coordinates: the only map link on any of the four pages is the same
+`goo.gl/maps/bWWzyu7pj5pTvYKk9` on all of them, one pin for the brand rather
+than four for the restaurants, and short links of that kind no longer redirect.
+The Woodlands page alone adds a Street View link whose `@` holds a camera
+position rather than the restaurant, which is not worth one position out of four.
+Each restaurant's own mailbox is recorded, three of the four having one; WinStar
+publishes none. All four state the same trading hours except WinStar, which runs
+later and opens on Sundays and Mondays when the Texas three are closed.
 
 `hoffbrau_steak_and_grill_house_us` is the first spider on this branch written
 by hand rather than by the assistant, added in commit `300c9b600`, and it was
