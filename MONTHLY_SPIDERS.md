@@ -144,6 +144,7 @@ project's own software, not as a data pipeline.
 | `james_coney_island_us` | 5 | 2026-11-07 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `new_orleans_hamburger_and_seafood_us` | 5 | 2026-11-09 |
+| `rams_head_group_us` | 6 | 2026-11-09 |
 | `roka_akor_us` | 5 | 2026-11-06 |
 | `third_love_us` | 4 | 2026-11-06 |
 | `tom_and_chee_us` | 5 | 2026-11-06 |
@@ -578,6 +579,97 @@ That article also records seventeen restaurants in February 2021, with closures
 through 2021 and 2022, against the five its infobox lists now and the five this
 spider collects. So this is a chain that has shrunk hard, and the count is worth
 watching downwards rather than up.
+
+`rams_head_group_us` is the first on this branch to cover a group rather than a
+chain. Its six venues are separately branded, each runs its own site, and
+between them those sites use three platforms: BentoBox for the Tavern,
+Roadhouse, Dockside and Shore House, WordPress for Southernmost and Carbonhouse
+for On Stage. So `operator` is Rams Head Group on all six and `brand` is the
+venue's own name, and the page to read is named per venue rather than
+discovered. None of the six has a Wikidata item - a search returns nothing for
+the group or for any venue - so there is no `brand_wikidata`, and neither
+ramsheadgroup.com nor the brand names appear in `origin/master`.
+
+**Rams Head Presents is deliberately not collected.** It carries the group's
+name and a site of its own, but it is the booking office: it buys talent for
+halls other operators own - Maryland Hall, the Key West Theater, Point of the
+Bluff Vineyards - and publishes an office address rather than a venue, under a
+postcode its own footer contradicts. Collecting it would have put other
+people's venues in the output.
+
+**The spider reads the group's own sitemap page only to check its own
+coverage.** That page lists every venue domain, so the spider compares those
+against the six it reads and logs an error naming any it does not, with the
+group's own site and Presents excluded by name. Expect that to be how a seventh
+venue announces itself, the way the locator list does for
+`heavenly_massage_us`.
+
+**None of the structured data on these sites is usable.** Dockside's ld+json
+still carries the CMS placeholder it was created with - the name reads
+"ramsheaddockside placeholder locations created at 2025-06-02 16:22:55.915618" -
+and states no hours at all; Shore House's ld+json block is an empty `{}`. The
+page description meta is no better: Dockside's states hours that contradict its
+own page, giving 11 AM to 11 PM Monday to Thursday where the page says Monday
+and Tuesday closed. So all four BentoBox venues are read from what the page
+displays, as `roka_akor_us` and `carmines` are.
+
+**Southernmost states two different house numbers for itself**, 840 Whitehead
+St in a block near the top of the page and 804 in the LOCATION block at the
+foot. The spider reads the LOCATION block, because the address inside the
+venue's own Google map embed is 804 as well, so two of its three statements
+agree and the map is the one the merchant configured. It also keeps three
+*stale* sets of hours in HTML comments - "9 AM to 11 PM Daily", "Food served
+until 10 PM" and "Monday through Thursday 8:30AM to 11:00PM" - which no visitor
+sees. Selecting the HOURS block keeps them out; sweeping the page text mixes
+them into the live "Every Day 8:00AM to 11:00PM", and a naive tag strip leaks a
+bare `-->` as well.
+
+**"&" had to be added to the shared day delimiters, and it matters.**
+`DELIMITERS_EN` does not hold it, and without it `add_ranges_from_string` reads
+"Friday & Saturday 11 AM - 2 AM" as Saturday alone - Friday disappears with
+nothing going wrong to show it. Dockside loses Monday and Wednesday the same
+way. "Every Day" is likewise missing from `NAMED_DAY_RANGES_EN` and yields
+nothing whatever, which is what Southernmost states. Both are passed to the
+shared parser as arguments rather than written here as a weekday table of this
+spider's own.
+
+**On Stage is recorded with neither hours nor coordinates.** The only hours it
+publishes are its box office's, which are not the hours the venue opens, and
+its page carries no map. It shares 33 West Street and 410-268-4545 with the
+Tavern because they are the same building, and both are kept - one a
+restaurant, one a music venue - rather than one being treated as a duplicate.
+Its coordinates are left unset rather than taken from the Tavern's, which would
+be one venue's data standing in for another's.
+
+**On Stage also needs the spider to name itself.** Its site sits behind Fastly,
+and on a cache miss that returns an empty 406 to any request whose User-Agent
+contains "Mozilla" - which the default one does, beginning "Mozilla/5.0 (X11;
+Linux x86_64)" - while serving named crawlers normally. So the spider sets
+`USER_AGENT` to the shared `BOT_USER_AGENT_SCRAPY`, which identifies All The
+Places and carries no browser prefix; all seven hosts answer 200 to it. This is
+the reverse of a bot block, and robots.txt on every one of these domains is
+readable and permissive, so naming the crawler is the fix rather than a way
+round anything. Worth knowing because the failure is quiet and misleading: the
+venue simply drops out of a run, and a single retry can return 200 off the
+cache and suggest a one-off.
+
+Shore House's hours come out with adjacent and overlapping ranges - `Mo-Th
+08:00-11:00,11:00-24:00` and `Su 00:00-02:00,08:00-12:00,08:00-24:00` - because
+it states breakfast and lunch and dinner separately and `OpeningHours` does not
+merge them. Both are the venue's own trading hours, unlike the coffee shop
+beside the restaurant at St. Charles in
+`new_orleans_hamburger_and_seafood_us`, so they are combined rather than one
+being dropped. Friday keeps an 11:00 to 12:00 gap because the page gives
+breakfast until 11 and lunch from 12.
+
+Cuisine is recorded only for the Tavern and the Roadhouse, both `american`, from
+the `servesCuisine` each states. Dockside calls itself a "Bar & Grill", Shore
+House a "Chesapeake Restaurant" and Southernmost "modern island fare", none of
+which names a cuisine, so none is recorded rather than guessed at. Every venue
+gives marketing@ramsheadgroup.com as its email, which is the group's and not the
+venue's, so no email is collected either. The Roadhouse's coordinates
+reverse-geocode to Crownsville against the Annapolis it states: 1773 Generals
+Highway is in Crownsville with an Annapolis postal address, so both are right.
 
 `new_orleans_hamburger_and_seafood_us` reads the one page that lists the five
 restaurants. They have no pages of their own: the site's page-sitemap names nine
