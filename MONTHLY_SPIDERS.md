@@ -132,6 +132,7 @@ project's own software, not as a data pipeline.
 | `natural_body_us` | 5 | 2026-11-04 |
 | `mitchells_fish_market_us` | 5 | 2026-11-04 |
 | `acme_oyster_house_us` | 5 | 2026-11-04 |
+| `aquarium_restaurants_us` | 4 | 2026-11-09 |
 | `arirang_hibachi_steakhouse_us` | 5 | 2026-11-04 |
 | `bad_brads_bbq_us` | 5 | 2026-11-05 |
 | `bulldog_ale_house_us` | 1 | 2026-11-09 |
@@ -672,6 +673,77 @@ gives marketing@ramsheadgroup.com as its email, which is the group's and not the
 venue's, so no email is collected either. The Roadhouse's coordinates
 reverse-geocode to Crownsville against the Annapolis it states: 1773 Generals
 Highway is in Crownsville with an Annapolis postal address, so both are right.
+
+`aquarium_restaurants_us` is the second group spider on this branch after
+`rams_head_group_us`, and the one where the brand check mattered most. Aquarium
+is a Landry's brand, and upstream already carries five of its siblings -
+`landrys_seafood_us`, `bubba_gump_shrimp_us`, `rainforest_cafe_us`,
+`chart_house_us` and `mortons_the_steakhouse_us` - so this needed checking
+against the family rather than the name. It is clean: `landrys_seafood_us` is
+scoped to `landrysseafoodhouse.com` and carries only that brand, no upstream
+spider mentions an aquarium, and the brand has no Wikidata item and no NSI
+entry, so there is no `brand_wikidata`.
+
+**robots.txt on the portal is a soft 404 and the distinction matters.**
+aquariumrestaurants.com/robots.txt answers `200` with the site's own branded
+"Error 404 (Not Found)" page, which holds no `User-agent`, `Disallow` or
+`Allow` line anywhere. Parsed as robots.txt it yields no rule at all, so
+nothing is restricted either way. This is not `claim_jumper_us`, where a
+challenge stands in place of robots.txt and the policy cannot be read: here the
+response reads perfectly and simply expresses no policy. The three venue
+domains do have real robots.txt, all `User-agent: *` with no `Disallow`, and
+each carries `Content-Signal: search=yes, ai-input=yes, ai-train=yes` - the
+opposite of the `ai-train=no` on Dos Caminos.
+
+Four restaurants, each inside a Landry's aquarium with a site of its own:
+Houston and Kemah and Nashville on one modern template, Denver on an older one
+reached as a path of the portal rather than a domain. The portal's home page is
+read only to notice an aquarium domain the spider does not cover.
+
+**Only Denver states the restaurant's hours.** The other three leave them to
+empty divs that Yext fills in from the browser -
+`<div data-yext-field="hours-monday" data-yext-id="AQNV">` - so the day names
+are in the page and the times never are. Those three are recorded without
+hours rather than with a JavaScript runtime or a call to Yext's own API. Denver,
+on the old template, states them as text and labels them `Restaurant Hours`,
+which is the label the spider keys on, because that page states the exhibit's,
+the gift shop's and the Dive Lounge's hours beside them.
+
+**Houston's dining page looked like the missing hours and is not.** It states
+"Sunday - Thursday: 11:00am - 8:30pm" in plain text, which parses cleanly and
+would have been the obvious fix for the Yext gap - but the heading above it is
+"tHE dive lounge" and the sentence beside it places it on the second floor. They
+are the bar's. That is the `roka_akor_us` problem again, and the reason the
+spider reads only the page that names the restaurant.
+
+**The addresses are published in capitals, and that cannot simply be passed
+through.** Houston writes its state as "TEXAS", and `StateCodeCleanUpPipeline`
+matches a code exactly as given and a state name only in title case, so "TEXAS"
+matches neither branch, falls through to reverse geocoding, finds no
+coordinates to geocode from, and the state comes out empty. So a value longer
+than two characters is title-cased and a two-letter code is left alone, which
+turns "TEXAS" into "Texas" for the pipeline to resolve to TX while "TX" and
+"TN" pass untouched. Street and city are title-cased on the same reading, which
+is what turns "410 BAGBY STREET" into "410 Bagby Street"; Denver needs none of
+it, publishing schema.org microdata in ordinary case.
+
+Denver is the easiest of the four to read despite being the oldest: its address
+and phone are `itemprop` microdata, so they are selected by name rather than by
+position. The three modern pages put the restaurant's name, street and locality
+in three consecutive paragraphs, which Houston and Nashville wrap in a maps link
+and Kemah does not, so the block is found by which paragraph holds the locality
+and the street taken from the one before it.
+
+No position for any of the four. The modern pages link
+`maps.app.goo.gl` short links, which no longer redirect and are not ours to
+follow for coordinates in any case, and Denver's page carries no map at all. No
+cuisine either: the dining page describes "seafood specialties, steaks,
+chicken, salads, pasta dishes", which names a variety rather than a cuisine, so
+nothing is recorded instead of `seafood` being inferred - the same reading as
+Dockside's "Bar & Grill" in `rams_head_group_us`. `brand` is "Aquarium
+Restaurant", which is what the restaurant is called on all four sites, rather
+than the "Downtown Aquarium" that Houston and Denver call the complex around
+it. No `operator` is recorded, though the footers all read "© Landry's, Inc.".
 
 `bulldog_ale_house_us` collects **one** restaurant, and the one is the point.
 The site publishes `-location/` pages for four - Bolingbrook, Carol Stream,

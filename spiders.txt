@@ -10,6 +10,7 @@
 # the file name does not.
 
 acme_oyster_house_us
+aquarium_restaurants_us
 arirang_hibachi_steakhouse_us
 bad_brads_bbq_us
 bulldog_ale_house_us
