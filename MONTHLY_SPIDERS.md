@@ -143,6 +143,7 @@ project's own software, not as a data pipeline.
 | `heavenly_massage_us` | 5 | 2026-11-07 |
 | `james_coney_island_us` | 5 | 2026-11-07 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
+| `new_orleans_hamburger_and_seafood_us` | 5 | 2026-11-09 |
 | `roka_akor_us` | 5 | 2026-11-06 |
 | `third_love_us` | 4 | 2026-11-06 |
 | `tom_and_chee_us` | 5 | 2026-11-06 |
@@ -577,6 +578,68 @@ That article also records seventeen restaurants in February 2021, with closures
 through 2021 and 2022, against the five its infobox lists now and the five this
 spider collects. So this is a chain that has shrunk hard, and the count is worth
 watching downwards rather than up.
+
+`new_orleans_hamburger_and_seafood_us` reads the one page that lists the five
+restaurants. They have no pages of their own: the site's page-sitemap names nine
+pages and not one of them is a restaurant, so the locations page is the whole
+source. Its /coming-soon/ page says only "Coming Soon!" and names nothing.
+
+**The address shape is the thing to know.** Street and locality share one line
+with no comma anywhere in it - "1005 S. Clearview Parkway  New Orleans LA 70121"
+- and the only thing dividing them is a run of two or more spaces. So the spider
+must not collapse whitespace before matching: it resolves non-breaking spaces and
+trims the ends, and leaves the runs inside alone. Should the site ever write that
+divide as a single space, the split cannot be guessed back - "New Orleans" is two
+words and "Metairie" is one, so counting words back from the state tells them
+apart for neither - and the spider logs an error naming the restaurant rather
+than inventing a boundary. Expect that to be how a re-typed page announces
+itself.
+
+Veterans @ Martin Behrman writes its street as "817 Veterans Memorial Blvd,.",
+and the street capture ends at its last word character, which drops the stray
+punctuation. Left to the address pipeline it would have come back as "817
+Veterans Memorial Blvd, ." instead, that pipeline splitting on commas and keeping
+the period as a line of its own.
+
+**St. Charles publishes two sets of hours and only one of them is the
+restaurant's.** It labels them "Restaurant" and "Coffee Shop", and the coffee
+shop opens at 07:00 where the restaurant opens at 11:00, so collecting the wrong
+one would have the restaurant open four hours early every day. An unlabelled set
+is the restaurant's, which is how the other four read. A label counts as a
+section only when it is not a day name, so a restaurant writing "Monday -
+Thursday" with spaces around the dash cannot have its hours silently dropped as
+somebody else's section. This is the same problem as `roka_akor_us`, where dining
+room and lounge each state hours, and `karinas_mexican_seafood_us`, where happy
+hour sits among the trading hours.
+
+St. Charles also runs across two paragraphs, the first ending at the bare word
+"Hours:" and the second carrying both sets, so restaurants are grouped by where
+their headings fall rather than one to a paragraph. The headings are not written
+consistently either: Clearview wraps its name and its menu link in one
+`<strong><em>`, the other four use two, which is why the lines are cut at `<br>`
+rather than selected by element.
+
+**It yields no coordinates**, because the page publishes none - no map embeds, no
+Google links, nothing with a position in it - so the five are address-only, as
+`eatzis_us` is. Worth knowing if a monthly run is matched on position rather than
+on address. No `website` is recorded either: with all five on the one page the
+only URL available is the same for each, and `@source_uri` already records where
+the data came from.
+
+All five state the same hours, 11:00 to 21:00 Sunday to Thursday and 11:00 to
+22:00 Friday and Saturday, which each states for itself rather than anything
+brand-wide. The category is `fast_food` on the merchant's own account of itself:
+the about page calls the food "always served fresh, fast and counter-casual",
+which is ordering at a counter whatever the dining rooms look like. Upstream puts
+sit-down seafood chains such as `landrys_seafood_us` and `joes_crab_shack_us` at
+`restaurant` and the counter-service `skrimp_shack_us` at `fast_food`, which is
+the line this follows. Cuisine is `seafood;burger`, for a menu built on both.
+
+The brand has no Wikidata item - a search returns nothing at all - so there is no
+`brand_wikidata`, and neither nohsc.com nor the brand's name appears anywhere in
+`origin/master`. Aggregators still list restaurants in Houma and Mandeville that
+the brand's own site no longer does, and neither name appears on its pages; the
+five the merchant publishes are the five collected.
 
 `copper_river_grill_us` reads the one page that lists the restaurants. The site
 answers every path with its home page - /locations and /sitemap_index.xml come
