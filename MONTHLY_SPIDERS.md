@@ -142,6 +142,7 @@ project's own software, not as a data pipeline.
 | `copper_river_grill_us` | 5 | 2026-11-05 |
 | `duckworths_grill_and_taphouse_us` | 5 | 2026-11-06 |
 | `granville_us` | 5 | 2026-11-06 |
+| `grotto_ristorante_us` | 4 | 2026-11-10 |
 | `heavenly_massage_us` | 5 | 2026-11-07 |
 | `james_coney_island_us` | 5 | 2026-11-07 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
@@ -673,6 +674,73 @@ gives marketing@ramsheadgroup.com as its email, which is the group's and not the
 venue's, so no email is collected either. The Roadhouse's coordinates
 reverse-geocode to Crownsville against the Annapolis it states: 1773 Generals
 Highway is in Crownsville with an Annapolis postal address, so both are right.
+
+`grotto_ristorante_us` is the second Landry's brand on this branch after
+`aquarium_restaurants_us`, and the brand check went the same way: `grotto`
+appears in no upstream spider, and upstream's five other Landry's brands each
+cover only themselves. **The one Wikidata item for the name is a different
+chain** - Q20709024 is Grotto Pizza, the Delaware pizza chain - so there is no
+`brand_wikidata` here, and that QID in particular must not be borrowed.
+
+This one is short because the structured data is good. Every restaurant page
+publishes a `FoodEstablishment` with its address, phone and `servesCuisine`, so
+`StructuredDataSpider` reads all of that, `name_is_branch` moves the label into
+`branch`, and only three things are added by hand: the pin, the hours and the
+cuisine in lower case.
+
+**The site's own list of restaurants is in the locator's structured data, not
+its sitemap.** The `/locations/` page states each restaurant as a
+`subOrganization` of the group with its URL, and that is what the spider
+follows. Its sitemap names only two of the four - Galveston and Lake Charles -
+so a `SitemapSpider` would have missed both Houston restaurants, whose pages
+exist at `grotto-westheimer-tx` and `grotto-downtown-houston-tx` and are linked
+from nowhere a crawler would reach them except that list. Guessing those slugs
+failed: `grotto-houston-tx`, `grotto-westheimer` and `grotto-downtown-houston`
+all answer 404.
+
+**The description claims seven restaurants and the spider collects four.** The
+group's own `description` reads "one of our seven locations in Lake Charles, LA,
+Las Vegas, NV, Atlantic City, NJ, Galveston, TX, Westheimer, TX, The Woodlands,
+TX, and Downtown Houston, TX" - three more than it publishes anywhere else. Las
+Vegas, Atlantic City and The Woodlands appear in no `subOrganization`, in no
+sitemap, and `/location/grotto-las-vegas/`, `/location/grotto-atlantic-city/`
+and `/location/grotto-the-woodlands/` all answer 404. The FAQ page answers
+"Where are the Grotto Ristorante locations?" by pointing at the locator rather
+than naming seven. So the prose is the stale surface and the structured list is
+the kept one, exactly the reverse of `bulldog_ale_house_us`, where the menu was
+current and the sitemap was not. Worth watching if the count ever reads seven.
+
+The hours need filtering and the filter is upstream's. These pages state the
+trading hours, then a promotion - "Happy Hour MON - FRI: 2:00 PM - 7:00 PM |
+Brunch SAT - SUN: 11:00 AM - 3:00 PM" - and then a "Holiday Hours" block of
+dated exceptions running to "Fri, Jan 1, 2027". `mortons_the_steakhouse_us`
+upstream, another Landry's brand on the same BentoBox platform, drops those by
+excluding any line holding "hour" and any line holding a four-digit year. Here
+the same job is done by requiring the shape of a rule instead: a day or day
+range, a colon, then something with a digit or the word closed in it. The
+promotions lead with their own name and the holiday lines lead with a weekday
+and a comma, so neither matches, and feeding the rest of the section's text to
+the parser is harmless - the addresses, phone numbers and the long prose
+paragraphs carry nothing it reads as a time.
+
+Two shapes caught here were already familiar. The `p[skip="true"]` that holds
+Galveston's hours holds nothing on the other three, so the hours are found by
+what the lines say rather than by that attribute, as in `bulldog_ale_house_us`.
+And `ref` arrived as the structured data's `@id`, which is the page URL with
+`#foodestablishment` on the end, so it is overridden with the page's slug the
+way `tom_and_chee_us` does.
+
+Galveston omits Tuesday from its hours rather than marking it closed, which in
+`opening_hours` means the same thing, so nothing is added for it. Lake Charles
+states "SUN - THU: Closed" and keeps only Friday and Saturday, which reads
+oddly for a casino restaurant but is what it publishes. The branch labels have
+their state stripped, which is why one reads "Houston (Galleria)" rather than
+"Houston, TX (Galleria)" - the state sits mid-string there, not at the end, so
+anchoring the pattern at the end left it in place on the first run. `brand` is
+"Grotto Ristorante", the name the FAQ uses, rather than the "Grotto" of the
+group's own `Organization` name. Each image is the restaurant's own page
+picture, distinct across the four, so none is dropped; two of them are of food
+rather than the room.
 
 `aquarium_restaurants_us` is the second group spider on this branch after
 `rams_head_group_us`, and the one where the brand check mattered most. Aquarium
