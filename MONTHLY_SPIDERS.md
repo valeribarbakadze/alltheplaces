@@ -1118,6 +1118,7 @@ networks on 2026-11-06.
 | Strong's Brick Oven Pizza, `strongsbrickovenpizza.com` | not written. Five restaurants named by the sitemap: lawrenceburg, newport, reading, union, westside. |
 | Texadelphia, `texadelphia.com` | not written. Five restaurants named by the sitemap: eastland, memorial, okc, sunset-valley, west-love. |
 | Tommy John, `tommyjohn.com` | not written, and nothing is readable but robots.txt - the sitemap is gated too. Brand is `Q30598534`, absent upstream. Stores do exist: King of Prussia, Charlotte SouthPark, Southlake TX, Scottsdale, Birmingham and more by the trade press. |
+| Jolly Pumpkin, `jollypumpkinpubs.com` | not written, by decision. Three of the brand's four venues live here - Ann Arbor, East Lansing, Traverse City - and robots.txt is challenged along with the pages, so the policy cannot be read at all. Its fourth venue is collectable and was still left alone; see below. |
 
 Tommy John is the one of the five where the gate reaches furthest: its sitemap is
 challenged along with everything else, so not even the store list can be read from
@@ -1159,3 +1160,54 @@ which `morettis_us` already waits on. Camoufox is free; a Zyte key is not. Neith
 has been set up here, and the assistant will not point a browser engine at a bot
 challenge on its own account - that is a decision to take deliberately, not one to
 arrive at by default.
+
+Jolly Pumpkin, checked 2026-11-10, is the one in this table that is **worse than
+the rest and partly collectable anyway**, and it is worth setting out because the
+two facts pull in opposite directions.
+
+Its landing page at `jollypumpkin.com` is readable - `User-agent: *` with
+`Crawl-delay: 10` and no `Disallow` - and links four venues plus a brewery. Three
+of the four, Ann Arbor, East Lansing and Traverse City, are pages of
+`jollypumpkinpubs.com`, and that host answers `403` with Cloudflare's managed
+challenge to `/robots.txt` exactly as it does to the pages. So this is not the
+Carmine's or Fadó case, where a permissive policy reads fine and only the content
+is gated; it is the `claim_jumper_us` case, where the policy itself cannot be
+read. That is a stronger reason to stop, and it is also why Camoufox would not
+settle it: the thing a browser engine would be fetching first is the permission
+to fetch at all. Confirmed from this container and from the laptop's own home
+network on 2026-11-10, both `403`, both `cType: 'managed'`.
+
+The fourth venue is a different site and is clean. `jollypumpkinartisanalesandkitchen.com`
+is Squarespace, publishes a readable robots.txt, and - this is the part worth
+remembering - **lists `anthropic-ai` and `ClaudeBot` without disallowing them.**
+Squarespace's template puts those agents in a long run of consecutive
+`User-agent:` lines that ends with `User-agent: *`, so all of them share one
+group, and that group's rules are the ordinary ones: `/config`, `/search`,
+`/account`, `/api/`, `/static/` and a list of query-string forms. There is no
+`Disallow: /` anywhere in it. Protego, which is the parser Scrapy itself uses,
+reads `/`, `/contact` and `/menu` as allowed for `ClaudeBot` and `anthropic-ai`
+alike. So a file that *names* us is not necessarily a file that *refuses* us -
+unlike Frozen Ropes and Dos Caminos in the section above, which disallow the
+agents they name. Read the directives, not the list.
+
+That venue publishes everything needed: it is branded "The Kitchen" and trades at
+2319 Bishop Cir E, Dexter, MI 48130 on (734) 792-9124, open Wednesday to Friday
+3PM to 9PM and Saturday 10AM to 9PM by the footer block that repeats site-wide.
+Its contact page separately states "Tuesday-Saturday 3-9PM", which contradicts
+that, and the site-wide footer would have been the one to trust. It publishes no
+coordinates at all. The brewery subdomain is no help: `brewery.jollypumpkin.com`
+redirects to a `www.` host whose robots.txt is the same permissive Squarespace
+file, and then serves nothing but an age gate, with no address in the HTML behind
+it - and the Dexter site says the ales are brewed on site there anyway, so it is
+likely not a separate place.
+
+**No spider was written, by decision rather than by obstacle.** One venue out of
+four would have put a count of 1 into the monthly run for a brand that has four,
+which reads as a shrinking chain rather than as a gated one, and that is a worse
+failure than no row at all. If the three ever become readable, the brand is clean
+on the upstream check - nothing for `jollypumpkin`, `jolly.pumpkin`, `north_peak`
+or `grizzly_peak` in `origin/master`, and no Wikidata or NSI entry by domain or
+label - and the Dexter facts above are enough to start from. The landing page's
+own title and description still name Detroit, which the page itself no longer
+links, so expect the four to be the current set and Detroit to be gone.
+
