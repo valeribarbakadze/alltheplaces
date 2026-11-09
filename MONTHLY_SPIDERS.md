@@ -150,6 +150,7 @@ project's own software, not as a data pipeline.
 | `kirbys_steakhouse_us` | 4 | 2026-11-10 |
 | `new_orleans_hamburger_and_seafood_us` | 5 | 2026-11-09 |
 | `on_the_border_us` | 4 | 2026-11-09 |
+| `raffertys_pizza_us` | 4 | 2026-11-10 |
 | `rams_head_group_us` | 6 | 2026-11-09 |
 | `roka_akor_us` | 5 | 2026-11-06 |
 | `third_love_us` | 4 | 2026-11-06 |
@@ -974,6 +975,49 @@ nowhere in `origin/master`. The category is `restaurant` rather than `pub` or
 `bar`, following upstream's `millers_ale_house` and `sedona_taphouse_us`, which
 are the closest things to this and both sit at `restaurant`; no cuisine is
 recorded, the site describing itself only as "Food & Brews".
+
+`raffertys_pizza_us` is the shortest spider on this branch at 46 lines, and it is
+short because the site is well built rather than because anything was skipped.
+Rafferty's runs four pizza restaurants around the Brainerd lakes in Minnesota on
+Webflow, and Webflow renders the whole page on the server: the sitemap named in
+robots.txt lists the four `/location/` pages and nothing else that looks like
+one, each page carries its own address, phone and hours in the markup, and a
+plain `SitemapSpider` reaches all of it in one pass. No JavaScript, no locator
+API, no challenge, no stale second copy of the data to choose between. **The
+count is the merchant's own**: every page's description reads "one of the four
+Rafferty's locations".
+
+Its robots.txt is 67 bytes and holds a `Sitemap:` line and nothing else - no
+`User-agent`, no `Disallow` - so nothing is restricted, which is the same
+practical outcome as `User-agent: *` with no rules but reached a different way.
+
+The two blocks worth reading are labelled `Hours` and `Info`, and the spider
+finds them by those headings rather than by class, because Webflow generates
+the class names - `rich-text-block-2`, `rich-text-block-5` - and they would move
+with any edit to the page. Under `Info` the street and the locality are two text
+nodes divided by a `<br>`, which is the shape `rams_head_group_us` and
+`bulldog_ale_house_us` read, and the locality carries a two-letter state, so
+none of the splitting trouble of `kirbys_steakhouse_us` or
+`new_orleans_hamburger_and_seafood_us` arises. The hours parse with no
+preparation at all: "Sun-Thu: 11:00am to 9:00pm" uses `to`, which is already one
+of the shared delimiters, and states am and pm on both ends, so neither the `&`
+rewrite nor the bare-opening-time fix those two spiders needed is wanted here.
+
+Crosslake closes an hour earlier than the other three every day. Branch names
+are kept only where they are not the town, so only Baxter carries one: its
+heading reads "Baxter Mall and Delivery" while its address states Brainerd,
+which is the neighbouring city, so that one is a genuine branch rather than a
+repetition of `city`. The other three are named for their towns and carry none.
+Worth knowing if this is matched against merchant data that files that
+restaurant under Baxter rather than Brainerd - the site states Brainerd and
+56401, and that is what is recorded.
+
+No coordinates: none of the four pages carries a map, an embed or a link with a
+position in it. The brand has no Wikidata item and no NSI entry, so there is no
+`brand_wikidata`, and nothing for `raffertyspizza` or `rafferty` appears in
+`origin/master`. Note when checking that name in future that **Rafferty's
+Restaurant & Bar is a different chain** - a Kentucky one - and not this
+merchant.
 
 `on_the_border_us` is the first on this branch for a chain that used to be
 large. On The Border ran around a hundred restaurants, filed Chapter 11 in March
