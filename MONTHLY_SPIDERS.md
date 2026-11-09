@@ -144,6 +144,7 @@ project's own software, not as a data pipeline.
 | `granville_us` | 5 | 2026-11-06 |
 | `grotto_ristorante_us` | 4 | 2026-11-10 |
 | `heavenly_massage_us` | 5 | 2026-11-07 |
+| `hoffbrau_steak_and_grill_house_us` | 4 | 2026-11-10 |
 | `james_coney_island_us` | 5 | 2026-11-07 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `new_orleans_hamburger_and_seafood_us` | 5 | 2026-11-09 |
@@ -674,6 +675,46 @@ gives marketing@ramsheadgroup.com as its email, which is the group's and not the
 venue's, so no email is collected either. The Roadhouse's coordinates
 reverse-geocode to Crownsville against the Annapolis it states: 1773 Generals
 Highway is in Crownsville with an Annapolis postal address, so both are right.
+
+`hoffbrau_steak_and_grill_house_us` is the first spider on this branch written
+by hand rather than by the assistant, added in commit `300c9b600`, and it was
+reviewed rather than rewritten. It is correct. The four restaurants it collects
+are the four the merchant states it has - "Hoffbrau Steak & Grill House has four
+Texas locations" is the locations page's own first line - and all four come back
+with a distinct street, postcode, phone, website, branch and pin, each pin
+reverse-geocoding to the town it states. Its robots.txt is readable and
+permissive, `User-agent: *` with an empty `Disallow:`, and nothing named
+`hoffbrau` appears anywhere in `origin/master`. Black, isort and flake8 pass it
+unchanged and the four CI tests pass with it in place.
+
+Its `brand_wikidata`, `Q136534380`, checks out: the item is labelled "Hoffbrau
+Steak & Grill House" and described as a restaurant in Texas. Worth knowing for
+later that the link rests on that label and description rather than on a
+website: the item carries no `P856`, which is why searching
+`nsi-wikidata.json` by domain - the way `on_the_border_us` found `Q7091305` -
+turns up nothing for it, and the item is typed as a restaurant rather than a
+chain.
+
+**Two details in it are worth copying.** The first is the hours: it rewrites
+" & " as " and " before parsing, which is the fix for a trap that cost real data
+on `rams_head_group_us`. `DELIMITERS_EN` holds "and" but not "&", so
+"Friday & Saturday: 11am to 10pm" read straight gives Saturday alone and drops
+Friday silently. Rewriting the character into a delimiter the shared table
+already knows is neater than extending the table, which is what
+`rams_head_group_us` does. The second is that `extract_google_position` is
+called on the restaurant's own paragraph rather than on the response, so it can
+only find that restaurant's map link. Called page-wide it reads whatever map
+link comes first, which is how `on_the_border_us` would have filed a South
+Dakota restaurant in California.
+
+It sets `country="US"` explicitly, which the country pipeline already does from
+the spider's own `_us` suffix. It is harmless, and it is the one thing an
+upstream reviewer would ask to be deleted.
+
+What was missing was not the spider but its registration: the commit adds the
+file alone, so `spiders.txt` did not list it and this file did not describe it,
+and a monthly run would have skipped it without anything going wrong to show it.
+Both are added here.
 
 `grotto_ristorante_us` is the second Landry's brand on this branch after
 `aquarium_restaurants_us`, and the brand check went the same way: `grotto`
