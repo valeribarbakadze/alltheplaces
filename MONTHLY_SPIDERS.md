@@ -144,6 +144,7 @@ project's own software, not as a data pipeline.
 | `james_coney_island_us` | 5 | 2026-11-07 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `new_orleans_hamburger_and_seafood_us` | 5 | 2026-11-09 |
+| `on_the_border_us` | 4 | 2026-11-09 |
 | `rams_head_group_us` | 6 | 2026-11-09 |
 | `roka_akor_us` | 5 | 2026-11-06 |
 | `third_love_us` | 4 | 2026-11-06 |
@@ -670,6 +671,68 @@ gives marketing@ramsheadgroup.com as its email, which is the group's and not the
 venue's, so no email is collected either. The Roadhouse's coordinates
 reverse-geocode to Crownsville against the Annapolis it states: 1773 Generals
 Highway is in Crownsville with an Annapolis postal address, so both are right.
+
+`on_the_border_us` is the first on this branch for a chain that used to be
+large. On The Border ran around a hundred restaurants, filed Chapter 11 in March
+2025, closed every company-operated one during 2026 and now survives as
+franchises only. Its locator lists four, and the four are what the spider
+collects, so **this count is worth watching downwards rather than up** - the
+same caution as `james_coney_island_us`, only further along.
+
+**The locator is one restaurant short of what the trade press counted.** Yahoo
+Finance and the Las Vegas Weekly both put five left in June 2026, across
+California, Florida, Nevada and South Dakota; ontheborder.com lists Las Vegas
+NV, San Diego CA, Orlando FL and Rapid City SD, which is one per state. The
+missing one is Escondido CA, which Patch names as still open under the same
+franchisee as Mira Mesa, Brett Almquest. The site does not publish it: there is
+no row for it in the locator, it is absent from the sitemap, and
+/locations/escondido/ answers 302. Nothing is hardcoded to make up the
+difference - the merchant's own locator is the source and inventing a fifth row
+from a news story is not collecting - but if the count ever reads five, that is
+why.
+
+The data comes from the locator's MapSVG database, which the page carries whole
+in a `mapsvg_options` object, so one request gets everything: address, pin,
+phone, hours, services and a `restaurant_number` that serves as `ref` (2034,
+2009, 2093, 2053). No per-restaurant request is needed, and the four location
+pages are used only as each `website`, taken from the post's `url` rather than
+its `guid`, which for Las Vegas still reads `/locations/ann-road/` from an
+address it has since left.
+
+**Two fields in that database are wrong and are deliberately not used.** The
+plugin stores its own geocoding of each address beside the typed one, and at the
+airport the two disagree: the restaurant states 9000 Airport Blvd and the
+geocoder resolved 9333. The typed address is collected, being the restaurant's
+own statement of where it is. Worse, each record carries a `google_maps_url`,
+and Rapid City's centres on `@33.9769421,-117.5524625` - Riverside County,
+California, some fifteen hundred miles from South Dakota. So coordinates come
+from the record's own stored pin and `extract_google_position` is not called
+here: it reads exactly that link and would file the South Dakota restaurant in
+California. All four pins reverse-geocode to their stated place, Mira Mesa
+answering Poway and the airport answering Taft, both neighbours of the stated
+city rather than errors.
+
+`cuisine` is `tex-mex` and `name` and `official_name` are filled in, none of
+which this spider sets: the NSI pipeline supplies all three off
+`brand_wikidata`, and the run reports `atp/nsi/match_perfect` for all four. The
+QID, `Q7091305`, was read out of `locations/data/nsi-wikidata.json` in the
+checkout rather than from Wikidata's API, which has rate-limited this egress all
+week; that file ties the QID to ontheborder.com directly, so it is a firmer
+check than matching a label. NSI spells the brand "On The Border" with a capital
+T, against the "On the Border" of the Wikidata label, and NSI's spelling is what
+`tests/test_item_attributes.py` compares against.
+
+Branch names are kept only where they are not the town: Mira Mesa and Orlando
+Airport carry one, Las Vegas and Rapid City name their own cities and carry
+none. Services are recorded from the `available_services` each restaurant
+lists, so Mira Mesa gets `delivery` and `takeaway` but no `indoor_seating`,
+which the site does not claim for it, and the airport gets no `delivery`. The
+`owner` field holds franchise codes rather than names - `franchiseSYNPAC`,
+`franchiseDosGringos`, `franchiseHMSHost`, `franchiseFronteraChicos` - so no
+`operator` is recorded; un-camel-casing an internal code into a company name
+would be invention. Each record also carries a `restaurant_status`, false on all
+four, with nothing on the pages to say what true would mean, so it is left
+unread rather than guessed at as a closure flag.
 
 `new_orleans_hamburger_and_seafood_us` reads the one page that lists the five
 restaurants. They have no pages of their own: the site's page-sitemap names nine
