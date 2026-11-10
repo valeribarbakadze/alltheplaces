@@ -138,6 +138,7 @@ project's own software, not as a data pipeline.
 | `bad_brads_bbq_us` | 5 | 2026-11-05 |
 | `bulldog_ale_house_us` | 1 | 2026-11-09 |
 | `burgers_and_beer_us` | 5 | 2026-11-05 |
+| `cactus_restaurants_us` | 6 | 2026-11-10 |
 | `cafe_hollander_us` | 5 | 2026-11-05 |
 | `carmines` | 6 | never run whole; gated, see below |
 | `copper_river_grill_us` | 5 | 2026-11-05 |
@@ -788,6 +789,81 @@ What was missing was not the spider but its registration: the commit adds the
 file alone, so `spiders.txt` did not list it and this file did not describe it,
 and a monthly run would have skipped it without anything going wrong to show it.
 Both are added here.
+
+`cactus_restaurants_us` collects six restaurants - five around Seattle and one
+in Tacoma - and at 25 lines is the second shortest here, because the site's
+structured data is complete and correct.
+
+**The brand check is the part worth keeping.** NSI holds two entries called
+Cactus and neither is this one: Q466918 is a supermarket chain in Luxembourg
+and Q5016149 is Cactus Club Cafe, the Canadian restaurant chain. Nothing
+upstream covers `cactusrestaurants.com`. So there is no `brand_wikidata`, and
+those two QIDs in particular must never be borrowed for it - the same trap as
+Q20709024 in `grotto_ristorante_us`, where the one Wikidata item for the name
+was a different chain.
+
+**robots.txt is entirely comments.** All 1,248 bytes of it are Cloudflare's
+content-signals preamble - the definitions of `search`, `ai-input` and
+`ai-train`, and a notice reserving rights under Article 4 of the EU copyright
+directive - with not one directive after it: no `Content-Signal:` line, no
+`User-agent:`, no `Disallow:`, no `Sitemap:`. `protego` was asked directly and
+reports nothing restricted for any agent, named or otherwise. By the preamble's
+own wording, where the operator sets no signal for a use it "neither grants nor
+restricts permission via content signal". That is a third shape to put beside
+the two already recorded on this branch: not a 4xx, where the policy is
+unavailable and crawling is permitted, and not a challenge served in place of
+the file, where the policy is unreadable and the answer is to stop, but a
+readable file that deliberately states no policy at all. Taken as permitted.
+
+The sitemap had to be guessed, since robots.txt names none: `/sitemap.xml`
+answers, while `/sitemap_index.xml` and `/locations/` are both 404.
+
+**The structured data is good, and it was checked rather than trusted.** Every
+location page carries a `Restaurant` in its `@graph` with a full address,
+telephone, `geo` coordinates and a properly spelled `openingHoursSpecification`,
+and the home page carries none, so nothing is collected twice. The visible hours
+on each page match it exactly. That check mattered more than usual here, because
+the same pages also publish a happy hour (every day, 2 to 6), a weekend brunch
+(Saturday and Sunday, 10 to 2) and dated early closures for Christmas Eve, New
+Year's Eve and Independence Day. Reading the visible text would have had to
+filter three kinds of decoy; the structured data carries trading hours and
+nothing else. After `strip_house_us` and `the_post_sports_bar_and_grill_us`,
+where structured hours were stale boilerplate, this is the case where they were
+right - which is the argument for checking rather than for distrusting them.
+
+Bellevue Square keeps different hours from the other five - `Mo-Fr 11:00-22:00;
+Sa-Su 10:00-22:00` against `Mo-Th 11:00-21:00` and later closings at weekends
+elsewhere - which is the mall's hours, and the evidence that these values are
+genuinely per-restaurant rather than one block copied six times.
+
+`search_for_facebook` is off. The group's `sameAs` names one Facebook page and
+`StructuredDataSpider` was filing it as the contact details of all six
+restaurants, the same leak dropped in `strip_house_us`. `wanted_types` was set
+to `Restaurant` at first and then removed: it is already in the default list and
+none of the other types in the graph - `Organization`, `WebSite`, `WebPage`,
+`BreadcrumbList` - are, so the default selects the same entry.
+
+`ref` is the page slug, overriding an `@id` of the page URL with `#restaurant`
+appended, as in `grotto_ristorante_us` and `tom_and_chee_us`. The slugs are
+inconsistent and are left as the site writes them: five read
+`locations-<place>` and the sixth is a plain `south-lake-union`.
+
+`brand` is "Cactus Restaurants" - the name of the `Organization`, the `WebSite`
+and the domain - although each restaurant is signed "Cactus <neighbourhood>",
+which is what the structured data's `name` holds and what `branch` is taken
+from once the prefix is removed. `cuisine` is `mexican` alone even though the
+site states `["Southwestern", "Mexican"]`, because `southwestern` appears in no
+upstream spider and taginfo could not be reached from here to check whether it
+is established.
+
+Three of the six reverse-geocode to a neighbouring municipality rather than the
+city they state, and all three are right: Madison Park answers Medina, which is
+across Lake Washington and genuinely closer than the centre of Seattle; Alki
+Beach answers White Center; and Proctor answers Fircrest, a small city that
+Tacoma surrounds. These pages publish no second coordinate - no map embed, no
+directions link - so there was nothing to cross-check each pin against, and the
+six were checked for mutual consistency instead: downtown, West Seattle, east
+Seattle, Bellevue, Kirkland and Tacoma sit correctly relative to one another.
 
 `yafo_kitchen_us` collects four restaurants in Charlotte, all of them from the
 "Where is YAFO?" cards on the home page. Nothing upstream covers it and it is
