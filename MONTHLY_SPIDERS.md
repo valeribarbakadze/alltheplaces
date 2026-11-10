@@ -149,6 +149,7 @@ project's own software, not as a data pipeline.
 | `grove_wine_bar_and_kitchen_us` | 4 | 2026-11-10 |
 | `heavenly_massage_us` | 5 | 2026-11-07 |
 | `hoffbrau_steak_and_grill_house_us` | 4 | 2026-11-10 |
+| `husk_us` | 3 | 2026-11-11 |
 | `iii_forks_us` | 4 | 2026-11-10 |
 | `james_coney_island_us` | 5 | 2026-11-07 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
@@ -858,6 +859,78 @@ miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
 
+`husk_us` collects three restaurants - Charleston, Nashville and Savannah.
+Nothing upstream covers `huskrestaurant.com` or any of the three restaurant
+domains, and nothing covers the parent, Neighborhood Dining Group, or its
+sibling brands McCrady's, Minero and Delaney Oyster House. Husk is absent from
+NSI - the four "husk" hits in the data are substring noise, Aarhus, HUSKY CZ,
+Mohawk Oil and Husky - so there is no `brand_wikidata`.
+
+**One brand across four hosts, and the sitemap is no help on any of them.**
+`huskrestaurant.com` is a signpost with nothing on it: its `sitemap_index.xml`
+leads to a `page-sitemap.xml` holding exactly one URL, the home page, and that
+page's structured data is `WebPage`, `BreadcrumbList`, `WebSite` and
+`Organization` - no address, no restaurant. What it does carry is three links,
+each to a site of its own: `huskcharleston.com`, `husknashville.com` and
+`husksavannah.com`. So the spider follows the three `card-link` anchors and
+reads each restaurant's own footer. There is no location list to parse anywhere
+on the brand's sites, which is also why the count cannot drift silently: a
+fourth restaurant would mean a fourth link on the landing page.
+
+Greenville is gone, and worth knowing because its domain is not. The brand ran
+a Husk in Greenville and `huskgreenville.com` now resolves to parked spam
+advertising counterfeit sportswear, which is not followed from here. The landing
+page names the three remaining cities three separate times.
+
+`DOWNLOAD_DELAY` is 10. robots.txt is byte-identical on all four hosts: a bare
+`Crawl-delay: 10` on line 1, then a Yoast block with `User-agent: *`, an empty
+`Disallow:` and the sitemap. The delay sits *above* the first `User-agent` line,
+so it binds to no group at all - `protego` reports `can_fetch` true for every
+agent and `crawl_delay` of `None` - but the number is plainly what the brand
+intends, so it is honoured. This is the second robots.txt on the branch whose
+`Crawl-delay` binds to nothing, after `the_post_sports_bar_and_grill_us`;
+`iii_forks_us` at 10 and `pietros_pizza_us` at 20 declare theirs inside
+`User-agent: *`. Eight spiders on the branch now set a delay of their own.
+
+Each restaurant states its address, phone and hours in a `footer-column`, which
+is where all three fields come from. **Charleston publishes no postcode**, so
+the address pattern makes the postcode group optional rather than dropping the
+record or inventing 29401; the other two state theirs. The phone is the `tel:`
+href on `footer-phone-link`, distinct on all three, and the pipeline takes the
+scheme off.
+
+**Only Charleston gets coordinates, and the other two are right to have none.**
+Its Directions link is `maps/place/Husk/@32.7786012,-79.9323027,18z`, which
+`url_to_coords` reads through its `@lat,lon,zoom` branch; at zoom 18 the camera
+and the pin are the same place, and it agrees with 76 Queen St to four decimals,
+with `reverse_geocoder` answering Charleston, South Carolina. Nashville and
+Savannah publish `goo.gl/maps` short links, which no longer redirect and which
+this branch does not follow, so `extract_google_position` correctly returns
+nothing for them and those two carry a null geometry. The call is scoped to the
+footer column rather than the whole page, which costs nothing today - each page
+has exactly one maps link - and keeps the helper's "two floats anywhere in the
+URL" fallback from reaching a stray link later, which is how `pietros_pizza_us`
+nearly got Milwaukie's pin on its Salem record.
+
+**No `opening_hours`, and the hours are the reason rather than their absence.**
+All three footers state hours, and only Nashville's dinner says which days:
+"5pm - 10pm Sun - Thurs", "5pm - 10:30pm Fri & Sat". Charleston and Savannah
+both state dinner as a bare "5pm - 10pm" with no days anywhere. The day-qualified
+lines they do publish belong to something else: Charleston's are "Bar & Patio:
+4pm-10pm Sun-Thu, 4pm-11pm Fri-Sat", a separate space with its own longer hours,
+and Savannah's are brunch and "Happy Hour: Mon-Fri 5pm - 6pm". A day-aware
+parser pointed at those footers would have published the bar's hours as the
+Charleston restaurant's and an hour-long happy hour as Savannah's whole week -
+the same trap as the Aquarium's Dive Lounge. One correct record of three is not
+worth two wrong ones, so the field is left unset.
+
+`ref` is the restaurant's own URL, because on this brand the domain *is* the
+restaurant's identity; `website` is the same string, and `branch` is the city
+off the address line, which is how the brand itself names them. `cuisine` is
+`american`: Husk describes itself as modern Southern, and no spider in
+`locations/spiders/` sets `cuisine` to `southern`, so the established value is
+used rather than a new one invented for three records.
+
 `pietros_pizza_us` collects three pizzerias in Oregon - Milwaukie, Salem and
 Hood River. Nothing upstream covers `pietrosrestaurants.com` and it is absent
 from NSI, so there is no `brand_wikidata`; the only "pietro" in the NSI data is
@@ -914,9 +987,12 @@ geometry.
 `Crawl-Delay: 20`, inside the group that covers everyone - spelled with a
 capital D and following a `User-agent: *` line with a trailing space, both of
 which `protego` reads without complaint. A run takes about 95 seconds for five
-requests. This is the third crawl-delay on the branch and the second that is
-properly declared, after `iii_forks_us`; `the_post_sports_bar_and_grill_us` is
-the one where it binds to nothing.
+requests. `iii_forks_us` declares its ten seconds the same proper way;
+`the_post_sports_bar_and_grill_us` and `husk_us` are the two where the directive
+binds to nothing. (An earlier version of this paragraph called this "the third
+crawl-delay on the branch", which was wrong: seven spiders set a delay before
+this one, among them `cafe_hollander_us`, `heavenly_massage_us` and
+`karinas_mexican_seafood_us`.)
 
 `merrimans_us` collects Peter Merriman's four Hawaii restaurants - Waimea on the
 Big Island, Kapalua on Maui, Poipu on Kauai and Honolulu on O'ahu. Nothing
