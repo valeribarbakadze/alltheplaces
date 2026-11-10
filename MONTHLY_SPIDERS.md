@@ -161,6 +161,7 @@ project's own software, not as a data pipeline.
 | `third_love_us` | 4 | 2026-11-06 |
 | `tom_and_chee_us` | 5 | 2026-11-06 |
 | `tortas_manantial_us` | 4 | 2026-11-10 |
+| `walnut_grill_us` | 3 | 2026-11-10 |
 | `wildberry_cafe_us` | 5 | 2026-11-06 |
 | `yafo_kitchen_us` | 4 | 2026-11-10 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
@@ -789,6 +790,68 @@ What was missing was not the spider but its registration: the commit adds the
 file alone, so `spiders.txt` did not list it and this file did not describe it,
 and a monthly run would have skipped it without anything going wrong to show it.
 Both are added here.
+
+`walnut_grill_us` collects three restaurants around Pittsburgh. Nothing upstream
+covers `eatwalnut.com`, and the only NSI entry matching "walnut" is a school
+district in Los Angeles County, so there is no `brand_wikidata`.
+
+**The chain is three websites rather than one.** `eatwalnut.com` is a landing
+page; the restaurants live at `wexford.`, `robinson.` and
+`washington.eatwalnut.com`, each a full site of its own. The spider starts at the
+apex and follows the subdomain links it publishes, so a fourth restaurant
+appearing in that list is picked up without editing anything. That also means
+four robots.txt fetches per run, one per host - all four are permissive and
+identical, `User-agent: *` with no `Disallow` and a sitemap line.
+
+**The apex sitemap is worthless and the apex structured data is nearly so.**
+`eatwalnut.com/sitemap.xml` holds three URLs - the home page, `/-party` and
+`/accessibility-page-01` - and names no restaurant at all, so a `SitemapSpider`
+there would have collected nothing; each subdomain keeps its own sitemap
+instead. The apex's one `Restaurant` block describes a single restaurant and
+gives it no street and no city, only `addressRegion: PA` and
+`postalCode: 15090`. The subdomains carry no structured data whatsoever. So the
+apex block was used only as a cross-check, and it passes: its
+`openingHoursSpecification` matches what Wexford's own footer states, and its
+`geo` is about 6 m from the pin on Wexford's map.
+
+**A comma-separated day list is cut down to its last day by
+`add_ranges_from_string`.** The footer states "Mon, Tue, Wed, Thur" against
+"11:00 AM - 9:00 PM", and handing that to the parser returns `Th 11:00-21:00`:
+Monday, Tuesday and Wednesday gone without a word, and Friday likewise out of
+"Fri, Sat". `DELIMITERS_EN` holds no comma. The days are split and added one at
+a time through `add_range`, which is what structured values should use anyway.
+That is the third silent-loss shape recorded here, after the `&` that swallowed
+Friday in `rams_head_group_us` and the "Noon" that removed Sundays in
+`stefaninas_pizzeria_us`. All three look like a working spider until the output
+is read against the page.
+
+**`sanitise_day` strips `-.\t ` and not newlines**, which matters because this
+markup puts each day list on its own line inside the div, so `sanitise_day(day)`
+returns `None` and `add_range` raises. It is called as
+`sanitise_day(day.strip())`. This was found by deleting the `.strip()` to test
+whether it did anything - it did, and the crawl failed loudly rather than
+quietly, which is the failure worth having.
+
+The rest of the markup is a pleasure: `.address`, `.city-state` and `.zip` divs,
+`.days` and `.from-to` divs in pairs, and the phone under the stable id
+`contact_us_v3_section_phone_link`. The platform is SpotHopper, whose asset host
+`static.spotapps.co` is also where `the_post_sports_bar_and_grill_us` sends its
+online orders - the two brands share a vendor but not a locator, and nothing
+about one spider transfers to the other.
+
+`ref` is the `spot_id` each site declares in script - 115658, 169163, 169164 -
+rather than the subdomain name. Wexford's sits in a different range from the
+other two, which reads as its site having been built first. `email` is
+per-restaurant and kept: `wexford@`, `robinson@` and `washington@eatwalnut.com`.
+The hours are the same at all three, read from each footer separately rather
+than assumed from one.
+
+`reverse_geocoder` answers a neighbouring borough for every one of the three -
+East Washington, Bradford Woods and Rennerdale - because Wexford and Robinson
+Township are unincorporated and absent from its dataset. The pins are 14 to 32
+miles apart and sit north, west and south of Pittsburgh, which is how the brand
+describes itself. Three restaurants is below the ten upstream would ask for, and
+that bar does not apply on this branch.
 
 `cactus_restaurants_us` collects six restaurants - five around Seattle and one
 in Tacoma - and at 25 lines is the second shortest here, because the site's
