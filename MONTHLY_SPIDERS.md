@@ -162,6 +162,7 @@ project's own software, not as a data pipeline.
 | `third_love_us` | 4 | 2026-11-06 |
 | `tom_and_chee_us` | 5 | 2026-11-06 |
 | `tortas_manantial_us` | 4 | 2026-11-10 |
+| `tropical_tan_us` | 3 | 2026-11-10 |
 | `walnut_grill_us` | 3 | 2026-11-10 |
 | `wildberry_cafe_us` | 5 | 2026-11-06 |
 | `yafo_kitchen_us` | 4 | 2026-11-10 |
@@ -853,6 +854,76 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`tropical_tan_us` collects three tanning salons in northern Kentucky, at Dry
+Ridge, Florence and Walton - the first tanning chain here, joining
+`heavenly_massage_us`, `natural_body_us`, `third_love_us` and `eatzis_us` as the
+entries that are not restaurants. Nothing upstream covers `tropical-tan.com` and
+it is absent from NSI, so there is no `brand_wikidata`; the four NSI entries
+matching "tropical" are Pollo Tropical, Tropical Smoothie Cafe, Valerio's
+Tropical Bakeshop and Bahama Breeze, none of them this.
+
+Being a different trade, the category needed deciding rather than assuming.
+There is no tanning entry in `locations/categories.py` and no upstream spider
+uses `beauty=tanning`, so this follows `tanning_shop_ie_gb`, the one upstream
+tanning chain that sets a category at all, and files them as
+`Categories.SHOP_BEAUTY`. `palm_beach_tan_us` upstream sets no category. Adding a
+`beauty=tanning` entry would be the more precise answer and is worth considering
+if more of these arrive, but taginfo could not be reached from here to check it
+is established, and inventing a `Categories` entry is what the guide warns
+against - though `natural_body_us` on this branch already carries
+`Categories.SHOP_BEAUTY_SPA`, which is `shop=beauty` with `beauty=spa` beside
+it, so the shape such an entry would take is already settled here.
+
+robots.txt is `User-agent: *` with no `Disallow` and a `Content-Signal:
+search=yes, ai-input=yes, ai-train=yes` line - the same file Fadó Irish Pub and
+Strong's Brick Oven Pizza publish, to the byte. On those two a Cloudflare
+challenge stands behind that invitation; here nothing does, and every page
+answered a plain request first time.
+
+**Everything is on the contact page and nothing else has it.** The sitemap lists
+five URLs and none is a salon. Each salon is a Duda column wrapper holding four
+columns - name and address, phone, email, hours - and since Duda generates every
+class name and id (`u_1455979126`, `id="1127508297"`), the salons are found by
+content instead: a `dmRespColsWrapper` that contains a state and a five-digit
+postcode. Three do, and the footer blocks that repeat all three salons do not.
+
+**Walton's phone and email links both point at Dry Ridge, and its visible text
+is right.** Its `tel:` href reads `(859) 824-1222`, which is Dry Ridge's number,
+and its email column offers two `mailto:` links of which the first is
+`TropicalTanDryRidge@gmail.com`. The text the page shows says `(859)-485-0051`
+and `TropicalTanWaltonKY@gmail.com`, and the footer's own `tel:` for Walton
+agrees with the text. So both fields are read from the text rather than from the
+links - the reverse of the usual advice, and the reason the output has Walton's
+own number rather than a second copy of Dry Ridge's. A spider written the
+obvious way would have published a wrong phone number that looked perfectly
+ordinary.
+
+Walton also breaks its number across two text nodes, `(859)-485-0` and `051`,
+which is why the phone and the email are matched against `string()` of the
+column rather than against its text nodes: `string()` concatenates without
+separators and rejoins the number. The hours are the opposite case and need the
+nodes kept apart, since `string()` would run `MONDAY - FRIDAY` into
+`8:00 am - 8:00 pm`.
+
+The remaining oddities are all Walton's: its name is written in title case where
+the other two shout theirs in capitals, so the branch is title-cased only when
+it arrives upper; its address puts the suite on a line of its own, so the street
+is joined from every line between the name and the locality, giving
+"625 Chestnut Dr. Suite 109"; and its `Get Directions` link sits before its name
+rather than after its address, so the name is taken as the first line once those
+links are dropped. The contact form's "Specific Location" menu is stale as well
+- it offers Dry Ridge and Florence only - which would have been a tempting
+location list and a wrong one. The page says "Now with three locations!" and
+"WITH THREE LOCATIONS" in two more places.
+
+**No coordinates.** Every address links to a `goo.gl` short link and the site
+publishes nothing else - no map embed, no latitude anywhere on any of its five
+pages. Short links are not followed on this branch, and guessing is worse than
+leaving the field out, so these three records carry a null geometry. All three
+salons keep the same hours, `Mo-Fr 08:00-20:00; Sa 09:00-16:00; Su closed`,
+each stated in its own column, with "CLOSED SUNDAY" read through `set_closed`
+rather than dropped.
 
 `european_street_cafe_us` collects three restaurants in Jacksonville. Nothing
 upstream covers `europeanstreet.com` and it is absent from NSI, so there is no
