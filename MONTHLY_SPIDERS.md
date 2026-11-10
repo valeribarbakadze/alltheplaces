@@ -149,6 +149,7 @@ project's own software, not as a data pipeline.
 | `grove_wine_bar_and_kitchen_us` | 4 | 2026-11-10 |
 | `heavenly_massage_us` | 5 | 2026-11-07 |
 | `hoffbrau_steak_and_grill_house_us` | 4 | 2026-11-10 |
+| `iii_forks_us` | 4 | 2026-11-10 |
 | `james_coney_island_us` | 5 | 2026-11-07 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `kirbys_steakhouse_us` | 4 | 2026-11-10 |
@@ -854,6 +855,70 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`iii_forks_us` collects four steakhouses - Austin, Frisco, Jacksonville and the
+one at Addison the brand calls Dallas - and is 40 lines, because the structured
+data on each restaurant's page is complete and right.
+
+**The brand check mattered because III Forks used to belong to Del Frisco's**,
+and upstream carries two Del Frisco's spiders. Neither reaches this one:
+`del_friscos_grille_us` is scoped to `delfriscosgrille.com` and
+`del_friscos_double_eagle_steakhouse_us` to `delfriscos.com`, and nothing in
+`origin/master` mentions `3forks`. NSI holds Del Frisco's Double Eagle
+(`Q23461481`) and no III Forks, so there is no `brand_wikidata` and that QID is
+not transferable to this.
+
+The file is `iii_forks_us` after the brand's own spelling, with the numeral
+spelled out nowhere: upstream keeps the glyphs a brand uses in the file name and
+spells numbers out only in the class, where an identifier cannot start with a
+digit - `3_brasseurs_fr` is `ThreeBrasseursFRSpider`, `365_bank_sk` is
+`ThreehundredsixtyfiveBankSKSpider`. Roman numerals need no such rescue, so the
+class is `IIIForksUSSpider`.
+
+**`Crawl-delay: 10` is declared properly here and is honoured.** It sits inside
+the `User-agent: *` group rather than floating above every group as it does on
+`the_post_sports_bar_and_grill_us`, and `protego` reports it as 10 seconds for
+every agent asked, this one included. Scrapy applies none of it by itself -
+there is no mention of `crawl_delay` anywhere in its robots middleware, which
+only filters URLs - so `DOWNLOAD_DELAY` is set to 10 in `custom_settings`. The
+run takes about 70 seconds for six requests, which is the delay working. The
+only other group in that file is for `Powermapper`, a link checker, and it is
+the one agent barred from `/employment/`.
+
+**The restaurants are listed in the page's structured data and in no sitemap.**
+`/sitemap.xml` names 23 URLs, including a `private-dining-form/<city>` page for
+each restaurant, and not one `/location/<city>/` page - so a `SitemapSpider`
+would have found the enquiry forms and missed the restaurants. The `/locations/`
+page carries an `ItemList` of exactly four with their URLs and
+`numberOfItems: 4`, which is what the spider follows, the same shape as
+`grotto_ristorante_us`. The `ItemList` lives inside a `@graph`, which cost a
+`KeyError` on the first run: the selector picks the script holding it, but the
+object at the top of that script is the graph, not the list, so the list is
+found by its `@type` within it rather than by position.
+
+The names are no use for telling the restaurants apart. Two are "III Forks" and
+two "III Forks Steakhouse" in their structured data, neither saying which
+restaurant it is, so `name` is dropped and `branch` is taken from the locality -
+Austin, Frisco, Jacksonville and Dallas, which is exactly what the group's own
+`ItemList` calls the four.
+
+**The Addison restaurant is filed in Dallas, deliberately.** Its slug is
+`addison-tx`, its street is 5100 Belt Line Rd, and its pin reverse-geocodes to
+Addison, Texas - a town of its own. Its structured data gives
+`addressLocality: Dallas` with postcode 75254, which is the postal city for that
+address, and the `ItemList` calls it "III Forks Steakhouse - Dallas". So
+`addr:city` holds what the brand and the post office say and `ref` keeps
+`addison-tx`, the same treatment Maplewood gets in
+`the_post_sports_bar_and_grill_us`, where the postal city is St. Louis. Frisco
+reverse-geocodes to The Colony, which is simply the nearer entry in that
+dataset; 1303 Legacy Dr is in Frisco and the postcode agrees.
+
+Hours differ across all four, which is the evidence they are real: Austin and
+Jacksonville open at 17:00, Frisco at 16:30 and six days a week rather than
+five, and Addison at 16:00 with Sunday grouped with the weekdays.
+`search_for_facebook` and `search_for_twitter` are off - one account each for
+the group, linked from all four pages - while the images are kept, each page
+carrying its own restaurant's photograph.
 
 `tropical_tan_us` collects three tanning salons in northern Kentucky, at Dry
 Ridge, Florence and Walton - the first tanning chain here, joining
