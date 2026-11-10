@@ -156,6 +156,7 @@ project's own software, not as a data pipeline.
 | `merrimans_us` | 4 | 2026-11-11 |
 | `new_orleans_hamburger_and_seafood_us` | 5 | 2026-11-09 |
 | `on_the_border_us` | 4 | 2026-11-09 |
+| `pietros_pizza_us` | 3 | 2026-11-11 |
 | `raffertys_pizza_us` | 4 | 2026-11-10 |
 | `rams_head_group_us` | 6 | 2026-11-09 |
 | `roka_akor_us` | 5 | 2026-11-06 |
@@ -856,6 +857,66 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`pietros_pizza_us` collects three pizzerias in Oregon - Milwaukie, Salem and
+Hood River. Nothing upstream covers `pietrosrestaurants.com` and it is absent
+from NSI, so there is no `brand_wikidata`; the only "pietro" in the NSI data is
+Porcellana di San Pietroburgo, a housewares brand.
+
+**The sitemap offers five restaurants under `/locations/` and two of them are
+not restaurants.** It lists `beaverton`, `corporate-office`, `milwaukie`,
+`salem` and `hood-river`. `/locations/corporate-office/` is the head office, and
+`/locations/beaverton/` says in its own first line: "The Beaverton Location has
+permanently closed. Please visit one of our other locations in Salem, Milwaukie,
+or Hood River." Both pages still answer 200 and both keep their furniture - the
+Beaverton restaurant also still has a coupons page and a menu page naming it -
+so a `SitemapSpider` on `/locations/` would have published five, of which one
+was a shut restaurant and one an office. The corporate office would also have
+duplicated an address: it sits at 11050 SE Oak St, which is the Milwaukie
+restaurant.
+
+The `/locations/` page is the authority and lists exactly the three, each behind
+a "View Location" link, which is what the spider follows. The site's navigation
+agrees, and so do its coupon pages for the three. Worth watching if the count
+ever reads four again: Beaverton's page is the sort that gets quietly revived.
+
+Each restaurant page states its details in `location-page-stat` blocks labelled
+Phone, Hours and Location, which is how each field is found - by its label
+rather than by position. The phone needs that scoping: every page repeats all
+three restaurants' numbers in its footer. Milwaukie is the only one of the three
+with an email address of its own, `milwaukie@pietrosrestaurants.com`, and it is
+kept; the other two publish none, so this is a field present on one record
+rather than a brand-wide value filed three times.
+
+**"Everyday" is not a day range the parser knows.** Hood River states its hours
+as "Everyday: 11AM - 10PM" where the other two say "Sun-Thur:" and "Fri-Sat:",
+and `NAMED_DAY_RANGES_EN` holds Daily, All Days, Weekday, Weekdays, Weekend and
+Weekends - not Everyday, and not Every Day either, which is the spelling that
+caught `rams_head_group_us`. Left alone, Hood River would have come back with no
+hours at all and no error, so `named_day_ranges` is passed with Everyday added.
+All three resolve to `Mo-Su 11:00-22:00`, each from its own wording.
+
+**No coordinates, and Salem is the reason to be careful rather than the reason
+to give up.** Milwaukie publishes only a `maps.app.goo.gl` short link, which
+this branch does not follow. Hood River publishes a Google search for its
+address and no coordinates at all, which `url_to_coords` correctly reads as
+nothing. Salem publishes
+`maps.google.com/maps?q=1637+HAWTHORNE+NE+salem,+Oregon&sll=45.466694,-122.63815`,
+and `url_to_coords` returns that `sll` pair through its final fallback of "two
+comma separated floats" - **but those coordinates are Milwaukie's**, which
+`reverse_geocoder` confirms, about 60 km north of Salem. It is a leftover from
+whichever page the Salem one was copied from. So `extract_google_position` here
+would have given one restaurant of three a pin, and that pin would have been
+another restaurant's. Nothing is better than that, and these three carry a null
+geometry.
+
+`DOWNLOAD_DELAY` is 20. robots.txt has no `Disallow` at all and one directive,
+`Crawl-Delay: 20`, inside the group that covers everyone - spelled with a
+capital D and following a `User-agent: *` line with a trailing space, both of
+which `protego` reads without complaint. A run takes about 95 seconds for five
+requests. This is the third crawl-delay on the branch and the second that is
+properly declared, after `iii_forks_us`; `the_post_sports_bar_and_grill_us` is
+the one where it binds to nothing.
 
 `merrimans_us` collects Peter Merriman's four Hawaii restaurants - Waimea on the
 Big Island, Kapalua on Maui, Poipu on Kauai and Honolulu on O'ahu. Nothing
