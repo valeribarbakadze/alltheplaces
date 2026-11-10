@@ -1754,8 +1754,9 @@ A third kind, and the most common one. These sites publish a robots.txt that
 invites crawling and then put Cloudflare's **managed** challenge in front of every
 page. That challenge answers any client which does not run JavaScript, so it is not
 a datacenter address being refused: a plain `curl` and a plain Scrapy request are
-both turned away from any network, home ones included. Each was tested from two
-networks on 2026-11-06.
+both turned away from any network, home ones included. The first five were each
+tested from two networks on 2026-11-06; the two added on 2026-11-10 are noted
+below with what was actually tested for them.
 
 | merchant | state |
 | --- | --- |
@@ -1765,6 +1766,7 @@ networks on 2026-11-06.
 | Texadelphia, `texadelphia.com` | not written. Five restaurants named by the sitemap: eastland, memorial, okc, sunset-valley, west-love. |
 | Tommy John, `tommyjohn.com` | not written, and nothing is readable but robots.txt - the sitemap is gated too. Brand is `Q30598534`, absent upstream. Stores do exist: King of Prussia, Charlotte SouthPark, Southlake TX, Scottsdale, Birmingham and more by the trade press. |
 | Jolly Pumpkin, `jollypumpkinpubs.com` | not written, by decision. Three of the brand's four venues live here - Ann Arbor, East Lansing, Traverse City - and robots.txt is challenged along with the pages, so the policy cannot be read at all. Its fourth venue is collectable and was still left alone; see below. |
+| Yolanda's Mexican Cafe, `yolandasmexicancafe.com` | not written. Three restaurants implied by the sitemap's per-location menu pages: camarillo, oxnard, ventura. robots.txt is challenged along with every page, so the policy cannot be read; `/sitemap.xml` is the one path served, and it names no locations page. |
 
 Tommy John is the one of the five where the gate reaches furthest: its sitemap is
 challenged along with everything else, so not even the store list can be read from
@@ -1806,6 +1808,37 @@ which `morettis_us` already waits on. Camoufox is free; a Zyte key is not. Neith
 has been set up here, and the assistant will not point a browser engine at a bot
 challenge on its own account - that is a decision to take deliberately, not one to
 arrive at by default.
+
+Yolanda's Mexican Cafe, checked 2026-11-10, **joins Jolly Pumpkin as a case where
+the policy itself cannot be read**, which is the stronger bar of the two kinds in
+this table. Cloudflare's managed challenge answers `/robots.txt` with a `403` and
+the "Just a moment..." page, so there is no way to know from here what the site
+permits - and that is the reason no spider was written, ahead of any question about
+whether the pages could be fetched. A `403` on robots.txt is, under RFC 9309, an
+"unavailable" status that would let a crawler proceed; a challenge page is not the
+same thing as an absent file, because it means a policy exists and is being
+withheld rather than that none was published. The rule followed here treats the
+second case as a stop.
+
+The gate is selective in an odd way, and it is worth recording for the pattern
+rather than for this merchant. `/sitemap.xml` is served in full - 245 URLs, as
+plain XML, to a plain Scrapy request - while `/`, `/contact`, `/about`, `/menus`
+and the apex host are all challenged, and so is `/robots.txt`. That is the
+Fadó and Strong's quirk of a public sitemap behind a closed site, combined with
+Jolly Pumpkin's unreadable policy. The sitemap names per-location menu pages for
+Camarillo, Oxnard and Ventura in Ventura County, California, and no locations page
+at all, so the addresses would have had to come from `/contact`, which is gated.
+Two sitemap entries that look like locations are menu items: `camarillo-chicken`
+and `santa-barbara-salad`.
+
+Unlike the five tested on 2026-11-06, this one was tested only from this network,
+on 2026-11-10, and `curl`, `urllib` and Scrapy were all answered with the same
+challenge on every HTML path. Reading its robots.txt from a browser on your own
+network would settle what the site actually permits; that was not done, since
+nothing would change while the collection itself needs a JavaScript runtime that
+this branch has deliberately not set up. Nothing upstream covers the brand - no
+match for `yolanda` anywhere in `origin/master` - and it has no NSI or Wikidata
+entry by name.
 
 Jolly Pumpkin, checked 2026-11-10, is the one in this table that is **worse than
 the rest and partly collectable anyway**, and it is worth setting out because the
