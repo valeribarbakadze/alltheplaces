@@ -161,6 +161,7 @@ project's own software, not as a data pipeline.
 | `tom_and_chee_us` | 5 | 2026-11-06 |
 | `tortas_manantial_us` | 4 | 2026-11-10 |
 | `wildberry_cafe_us` | 5 | 2026-11-06 |
+| `yafo_kitchen_us` | 4 | 2026-11-10 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
 
@@ -787,6 +788,64 @@ What was missing was not the spider but its registration: the commit adds the
 file alone, so `spiders.txt` did not list it and this file did not describe it,
 and a monthly run would have skipped it without anything going wrong to show it.
 Both are added here.
+
+`yafo_kitchen_us` collects four restaurants in Charlotte, all of them from the
+"Where is YAFO?" cards on the home page. Nothing upstream covers it and it is
+absent from NSI - the only matches for "yafo" across the data files are inside
+"Matsuya Foods" - and Wikidata and Wikipedia are both still rate-limiting this
+address, so there is no `brand_wikidata`. The footer names the operator as FS
+Food Group, worth knowing if a sibling brand is asked for later.
+
+**The site has a `location` post type, it has its own sitemap, and the four
+pages in it are empty.** `/blog/location/yafo-dilworth/` and its three siblings
+carry a heading and the site navigation and nothing else: no address, no phone,
+no hours, no map. A `SitemapSpider` over `location-sitemap.xml` is the obvious
+way into this site and would have produced four records holding nothing but a
+name. The stubs are also why no `website` is set.
+
+**Every page on the site carries all four restaurants in its structured data**,
+including each stub, so `StructuredDataSpider` would have emitted the whole
+chain once per page crawled. That data is good as far as it goes - clean
+`streetAddress`, `addressLocality`, `postalCode`, `telephone` and
+`servesCuisine` for each - but it has no coordinates, no hours, and a `url` of
+the site root on all four, so it cannot say where any single restaurant lives.
+It was used as a second opinion rather than a source: every address and phone
+number the cards give matches it exactly.
+
+**The hours are a time of day with no days attached.** All four cards read
+"11 am - 9 pm", and nothing anywhere on the site says what that covers - not the
+four per-restaurant menu pages, not the contact page, not the structured data.
+It almost certainly means daily, but "almost certainly" is a guess about when
+four restaurants are open, so `opening_hours` is left unset. Set it to
+`Mo-Su 11:00-21:00` across the four if the likely answer is worth more here than
+no answer.
+
+The map links are `/maps/place/` links and the camera is displaced again, as in
+`grove_wine_bar_and_kitchen_us`, though by far less. Three of the four are keyed
+to the street address, and on those the `@latitude,longitude` sits about 200 m
+west of the `!3d`/`!4d` pair in the same link; the Ballantyne link is keyed to
+the business name and the two agree exactly. The displacement is longitude-only
+and the same size every time, which is Google shifting the map centre to clear
+its info panel rather than anything about the restaurants.
+`extract_google_position` returns the camera, because the `@...z` branch is
+tested before everything else, so the `!3d`/`!4d` place is read instead. Second
+merchant running where that helper had to be set aside; the pattern to watch for
+is any Google link carrying `@` coordinates and a `data=` block, where the two
+are different things.
+
+`branch` is the card heading with the brand prefix removed, giving Southpark,
+Plaza Midwood, Dilworth and Ballantyne, and `ref` repeats it because the site
+publishes no id for a restaurant anywhere. The structured data's `@id` fragments
+- `#southpark`, `#plazamidwood`, `#dilworth`, `#ballantyne` - are the nearest
+thing to one, but nothing ties a fragment to a card except matching on text, so
+they are not used. Note that the structured data spells the first "SouthPark",
+which is how Charlotte writes the neighbourhood, where the card heading spells
+it "Southpark"; the heading won because the rest of the record comes from the
+card.
+
+Ballantyne reverse-geocodes to Pineville rather than Charlotte, which is
+correct: it is the adjacent town and genuinely the nearer of the two. The other
+three answer Charlotte.
 
 `tortas_manantial_us` is **21 lines, the shortest spider on this branch** by
 half, and the first here to subclass one of upstream's store finders. The site
