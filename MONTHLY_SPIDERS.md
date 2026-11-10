@@ -143,6 +143,7 @@ project's own software, not as a data pipeline.
 | `carmines` | 6 | never run whole; gated, see below |
 | `copper_river_grill_us` | 5 | 2026-11-05 |
 | `duckworths_grill_and_taphouse_us` | 5 | 2026-11-06 |
+| `european_street_cafe_us` | 3 | 2026-11-10 |
 | `granville_us` | 5 | 2026-11-06 |
 | `grotto_ristorante_us` | 4 | 2026-11-10 |
 | `grove_wine_bar_and_kitchen_us` | 4 | 2026-11-10 |
@@ -852,6 +853,84 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`european_street_cafe_us` collects three restaurants in Jacksonville. Nothing
+upstream covers `europeanstreet.com` and it is absent from NSI, so there is no
+`brand_wikidata`. The count is confirmed by the site's own description - "any of
+our three Jacksonville locations" - as well as by the sitemap and the contact
+page.
+
+**The robots.txt is the Squarespace one that reads like a refusal and is not
+one.** It opens with thirty consecutive `User-agent:` lines naming AI crawlers -
+`anthropic-ai`, `ClaudeBot`, `GPTBot`, `CCBot`, `Bytespider` and the rest - and
+then `User-agent: *`, and only after all of them come the directives.
+Consecutive user-agent lines form a single group, so every one of those agents
+shares the same rules, and there is no `Disallow: /` anywhere in the file. This
+was put to `protego` rather than read by eye, and every agent asked may fetch
+the pages. It is the second time this shape has come up on this branch, and the
+rule is the same: read the directives, not the list of names.
+
+What that file *does* forbid matters here, because it closes the easy door.
+`Disallow:/*?format=json` and its siblings rule out Squarespace's JSON views of
+any page, which is the first thing one reaches for on this platform. So
+everything below comes from the HTML.
+
+**The structured data is an empty shell.** Every page carries a `LocalBusiness`
+block and it is Squarespace's unfilled default: `address` is `""`,
+`openingHours` is `""`, and the only populated field is a logo image, identical
+across all five pages checked. `StructuredDataSpider` here would have produced
+five records with no address, no hours and no complaint - the quiet kind of
+failure. Compare `cactus_restaurants_us`, where the structured data was complete
+and correct; the lesson is only that it has to be looked at.
+
+**The site states one restaurant's city two different ways, and the map block
+settles it.** The contact page's locations list puts the beach restaurant at
+"992 Beach Blvd." in "Jacksonville, FL 32250", while the footer on every page
+says "992 Beach Blvd, Jacksonville Beach, FL 32250". 32250 is Jacksonville
+Beach's postcode and the two are separate municipalities. The Squarespace map
+block agrees with the footer - `addressLine2` reads "Jacksonville Beach, FL,
+32250" - and `reverse_geocoder` agrees with both, resolving that pin to
+Jacksonville Beach while the other two resolve to Jacksonville. So the list is
+the loose surface and `addr:city` holds Jacksonville Beach.
+
+The map block is the source for the address and the pin. Its `data-context`
+attribute carries a JSON object stating `markerLat`/`markerLng` alongside
+`mapLat`/`mapLng`, and here the two pairs are identical, so this is a marker
+rather than a camera - unlike the Google links in
+`grove_wine_bar_and_kitchen_us` and `yafo_kitchen_us`. It also spells its
+streets out, "2753 Park Street" where the page text abbreviates to "2753 Park
+St.", and writes the locality with a comma before the postcode, which the
+locality pattern here allows for. The only other coordinate on these pages is a
+`goo.gl/maps` short link per restaurant, which is not followed.
+
+**The phone needed scoping and `//main` does it.** Every page repeats all three
+restaurants in its footer, each with a `tel:` link, so there are four on each
+page; the restaurant's own is the only one inside `<main>`. Taking the first
+`tel:` on the page would have worked by accident, the page's own block coming
+before the footer, which is the kind of accident worth not relying on. The
+footer's three are also written `tel:1-904-...` while the page's own omits the
+country code, so they differ in form as well as position.
+
+Hours come from each restaurant's own block, which reads "Open Daily" and "10 am
+- 9 pm" in one paragraph with a `<br>` between them. The paragraph is found by
+what it says rather than by its block id, which Squarespace generates. "Daily"
+is in `NAMED_DAY_RANGES_EN`, so `add_ranges_from_string` turns it into all seven
+days without help. All three restaurants keep the same hours, which the site
+asserts for itself in a footer line, "All Locations Open 10 am - 9 pm Daily".
+The menu page also publishes a happy hour that differs between restaurants -
+Monday to Friday 2-8 at Riverside and San Marco, and from 10 am at weekends at
+the beach - and that is promotional rather than trading hours, so none of it is
+read.
+
+Two fields are deliberately absent. `email` is `info@europeanstreet.com` on all
+three, one company address rather than three restaurants' own. And `cuisine` is
+unset: the site calls its food "European cuisine" in its own description, but
+`european` is used by no upstream spider and taginfo could not be reached from
+here to check whether it is established, while `sandwich` - which the menu of
+croissants, pitas, soups and salads would support - is an inference of mine
+rather than anything the site says. `amenity=restaurant` rather than `cafe`
+despite the name: the menu runs from breakfast through dinner and the bar lists
+150 bottles and 20 drafts.
 
 `cactus_restaurants_us` collects six restaurants - five around Seattle and one
 in Tacoma - and at 25 lines is the second shortest here, because the site's
