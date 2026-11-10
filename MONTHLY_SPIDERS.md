@@ -144,6 +144,7 @@ project's own software, not as a data pipeline.
 | `duckworths_grill_and_taphouse_us` | 5 | 2026-11-06 |
 | `granville_us` | 5 | 2026-11-06 |
 | `grotto_ristorante_us` | 4 | 2026-11-10 |
+| `grove_wine_bar_and_kitchen_us` | 4 | 2026-11-10 |
 | `heavenly_massage_us` | 5 | 2026-11-07 |
 | `hoffbrau_steak_and_grill_house_us` | 4 | 2026-11-10 |
 | `james_coney_island_us` | 5 | 2026-11-07 |
@@ -784,6 +785,106 @@ What was missing was not the spider but its registration: the commit adds the
 file alone, so `spiders.txt` did not list it and this file did not describe it,
 and a monthly run would have skipped it without anything going wrong to show it.
 Both are added here.
+
+`grove_wine_bar_and_kitchen_us` collects four restaurants around Austin. The
+brand check found nothing upstream and nothing in NSI, and Wikidata and
+Wikipedia are both still rate-limiting this address, so there is no
+`brand_wikidata`. It was asked for as "The Grove Wine Bar and Kitchen" and is
+filed under the name the site gives itself, which is **Grove Wine Bar &
+Kitchen** with no "The" in all five page titles. Google holds it both ways -
+"The Grove Wine Bar & Kitchen - Westlake" against "Grove Wine Bar & Kitchen -
+Northwest Hills" - so the site's own consistent spelling wins, as it did for
+`kirbys_steakhouse_us`.
+
+**The hours are stated times first and days second** - "11am - 10pm Mon-Fri" -
+and `add_ranges_from_string` returns nothing at all for that order. Not a wrong
+day or a wrong time: nothing, on all four restaurants, which would have shipped
+four records with no hours and no error. The spider reverses each line into
+"Mon-Fri 11am - 10pm" before parsing. That is the same class of failure as the
+"Noon" that silently removed Sundays in `stefaninas_pizzeria_us`, and the same
+lesson: a rule the parser cannot read is dropped in full rather than flagged, so
+the parse has to be checked against the page every time.
+
+One regex does the filtering as well as the reordering. Requiring a line to
+begin with a time and end with day names keeps the two real rules and drops the
+rest, because every other line leads with its own label: "CURRENT HOURS",
+"Brunch 10:30am - 3pm Sat & Sun", "Happy Hour 2pm - 6pm M-F & 3pm - 6pm
+Sat-Sun", "MOTHER'S DAY OPENS AT 10:00am" and "Closed Jan. 1, Thanksgiving,
+Dec. 24-25". Brunch matters most of those: it is a real service with real
+times, and letting it through would have closed three restaurants at 3 PM at
+weekends instead of 10 PM.
+
+**That filter only works on whole paragraphs, and the reason is worth keeping.**
+The labels are marked up as `<strong>Brunch</strong>10:30am - 3pm Sat-Sun`, so
+reading the block text node by text node splits the label away from its times
+and leaves a bare "10:30am - 3pm Sat-Sun" that passes a leading-digit test
+perfectly. Taking `string()` of each `<p>` instead keeps the label attached and
+the line is rejected. Anywhere a label and its value are separate elements, a
+per-text-node filter sees the value alone.
+
+**Westlake's hours are in plain `<p>` tags while every other paragraph on the
+page carries `style="text-align: center;"`,** and they close with stray
+unmatched `</strong>` tags, which is WordPress editor damage rather than a
+template. Selecting the block by that inline style - the obvious thing to do,
+since it holds on the other three - returns only Westlake's brunch line, and
+Westlake would have been published as open 10:30 AM to 3 PM at weekends and shut
+the rest of the week. The block is found from the `Hours` heading instead, the
+same heading-anchored approach as `aquarium_restaurants_us` and
+`raffertys_pizza_us`. Inline style is not structure.
+
+All four publish the same two rules, and unlike `strip_house_us` that is
+honest: each page states them itself and they were read separately from each
+page, Westlake included.
+
+**The coordinates needed `extract_google_position` to be set aside.** Every
+"Get directions" link has the shape
+`/maps/dir/''/<address>/@30.2964274,-97.9027222,12z/data=...!1d-97.832682!2d30.296446`,
+and the helper checks for `@latitude,longitude,<zoom>` before anything else, so
+it returns the camera - which at zoom 12 is **6.4 km** from the Westlake
+restaurant and 6.5 km from Lakeway. The `!1d`/`!2d` pair at the end of the same
+link is the destination Google resolved for that place, and for Northwest Hills
+a second field in the same payload, `!3d`/`!4d`, repeats it. Those are what the
+spider reads. Each restaurant page also carries a map embed whose `!2d`/`!3d`
+is a third value, a map camera from 2018 to 2024; it agrees with the pin to
+between 210 m and 283 m on all four, which is what the pins were checked
+against. Three Google numbers per restaurant, and only one of them is the
+restaurant.
+
+**The pins come from the home page rather than the restaurant pages**, because
+Northwest Hills' own page offers only a `maps.app.goo.gl` short link, which no
+longer redirects and which this branch does not follow in any case. The home
+page's locations row carries a card per restaurant holding the full directions
+link, so the pin is read from each card and handed to the page callback. The
+card is also the scope: read page-wide, the first directions link found would
+have been filed against whichever restaurant was parsed, which is the mistake
+caught in `on_the_border_us`.
+
+The sitemap cannot drive this one. It lists twelve pages, of which the four
+restaurants are single-segment paths - `/westlake/`, `/lakeway/`,
+`/cedar-park/`, `/northwest-hills/` - indistinguishable by pattern from
+`/about/`, `/careers/` and `/gift-cards/`, and each has a
+`/<slug>/<slug>-qrmenupage/` child a looser rule would pick up as well. The
+home page's cards name the four exactly, and the navigation menu agrees.
+
+`branch` is the URL slug title-cased, which gives Westlake, Lakeway, Cedar Park
+and Northwest Hills. Neither of the two labels the site writes is usable as it
+stands: the page titles read "Westlake Grove", "Lakeway Grove", "Cedar Park
+Grove" and "Northwest Hills", which puts a brand word in three of four branches,
+and the home page cards read "Westlake", "Lakeway", "Cedar Park" and "NW Hills",
+which abbreviates the fourth. The slugs match the names Google lists the four
+under.
+
+Addresses come from the restaurant pages rather than the cards, the two being
+worded differently and neither consistently better: the Cedar Park page has
+"1310 E. Whitestone Blvd., #500" where its card drops the "Blvd.", while the
+Lakeway card spells out "3001 Ranch Road 620 South" where its page abbreviates
+to "3001 RR 620 South". The page was taken as each restaurant's own authority,
+so Lakeway carries the abbreviation. Worth knowing if a monthly run is matched
+on street text.
+
+Two signs the site is not closely maintained, neither of which affects what is
+collected: "MOTHER'S DAY OPENS AT 10:00am" still sits in the hours block in
+November, and the Westlake page announces "FULL BAR NOW OPEN!!!" twice.
 
 `strip_house_us` is the third Landry's brand on this branch, after
 `aquarium_restaurants_us` and `grotto_ristorante_us`, and the brand check came
