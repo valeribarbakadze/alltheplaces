@@ -2238,8 +2238,8 @@ invites crawling and then put Cloudflare's **managed** challenge in front of eve
 page. That challenge answers any client which does not run JavaScript, so it is not
 a datacenter address being refused: a plain `curl` and a plain Scrapy request are
 both turned away from any network, home ones included. The first five were each
-tested from two networks on 2026-11-06; the two added on 2026-11-10 are noted
-below with what was actually tested for them.
+tested from two networks on 2026-11-06; the two added on 2026-11-10 and the one
+added on 2026-11-11 are noted below with what was actually tested for them.
 
 | merchant | state |
 | --- | --- |
@@ -2250,6 +2250,7 @@ below with what was actually tested for them.
 | Tommy John, `tommyjohn.com` | not written, and nothing is readable but robots.txt - the sitemap is gated too. Brand is `Q30598534`, absent upstream. Stores do exist: King of Prussia, Charlotte SouthPark, Southlake TX, Scottsdale, Birmingham and more by the trade press. |
 | Jolly Pumpkin, `jollypumpkinpubs.com` | not written, by decision. Three of the brand's four venues live here - Ann Arbor, East Lansing, Traverse City - and robots.txt is challenged along with the pages, so the policy cannot be read at all. Its fourth venue is collectable and was still left alone; see below. |
 | Yolanda's Mexican Cafe, `yolandasmexicancafe.com` | not written. Three restaurants implied by the sitemap's per-location menu pages: camarillo, oxnard, ventura. robots.txt is challenged along with every page, so the policy cannot be read; `/sitemap.xml` is the one path served, and it names no locations page. |
+| The Union Kitchen, `theunionkitchen.com` | not written. Five or six restaurants around Houston, implied by sitemap slugs only: Memorial, Kingwood, Towne Lake, Cypress, Katy, Ella. robots.txt is `403` and challenged on both hosts, and stayed challenged in a real browser on a home connection, so the policy cannot be read. A PopMenu site, which is the gate upstream already knows how to get through. |
 
 Tommy John is the one of the five where the gate reaches furthest: its sitemap is
 challenged along with everything else, so not even the store list can be read from
@@ -2322,6 +2323,60 @@ nothing would change while the collection itself needs a JavaScript runtime that
 this branch has deliberately not set up. Nothing upstream covers the brand - no
 match for `yolanda` anywhere in `origin/master` - and it has no NSI or Wikidata
 entry by name.
+
+The Union Kitchen, checked 2026-11-11, is the **third case where the policy itself
+cannot be read, and the first where that was put to a real browser and held**. Both
+`www.theunionkitchen.com` and the apex host answer `/robots.txt` with `403` and
+Cloudflare's managed "Just a moment..." page to a plain Scrapy request. The question
+the Yolanda's note left open - whether reading robots.txt from a browser on your own
+network would settle what the site permits - was answered on this one: the browser
+pane on your laptop, a home connection and a real browser engine, was served the
+same `403` challenge page, and was still sitting on it twenty seconds later. So the
+challenge is not reserved for datacenter addresses, and it is not something a
+browser clears merely by being one. The distinction that matters for
+`dukes_seafood_us` and `carmines` - permissive policy, refused address - does not
+apply here at all.
+
+No spider, for the same reason as Jolly Pumpkin and Yolanda's: the file that would
+say whether crawling is allowed is the file being withheld. Nothing upstream covers
+`theunionkitchen.com` or the name, and the brand is absent from NSI, so there would
+have been no `brand_wikidata` either.
+
+`/sitemap.xml` is again the one path served - 933 URLs as plain XML to a plain
+Scrapy request, while `/sitemap_index.xml`, `/wp-json/wp/v2/pages`,
+`/locations.json` and every HTML path are challenged. It is mostly a menu: 779 of
+the 933 are `/items/`, down to `/items/add-avocado`, and another 130 are `/menus/`.
+It names `/locations` but no per-location page, so the restaurants are only implied,
+by slug: `/menu-kingwood`, `/menu-memorial` and `/menu-towne-lake`;
+`/popmenu-order/kingwood`, `/memorial` and `/towne-lake`; `/private-events-cypress`,
+`-kingwood` and `-memorial`; and event menus naming Katy and Ella. **Towne Lake is
+in Cypress**, so those two slugs may well be one restaurant and the count is five or
+six rather than seven - which the pages would settle and the sitemap cannot. One
+malformed entry,
+`/https/www-toasttab-com/the-union-kitchen-katy-9920-gaston-rd-100/rewards`, is an
+absolute Toast URL that lost its scheme when the sitemap was generated, and it
+leaks the Katy street address: 9920 Gaston Rd, Suite 100.
+
+**The platform is PopMenu, and upstream has already solved this exact gate.**
+`jon_smith_subs_us` in `origin/master` is a PopMenu site behind the same Turnstile.
+It sets `captcha_type = "cloudflare_turnstile"`, points
+`captcha_selector_indicating_success` at the `POPMENU_APOLLO_STATE` script tag,
+takes `DEFAULT_CAMOUFOX_SETTINGS_FOR_CLOUDFLARE_TURNSTILE` from
+`locations/settings.py` and sets `handle_httpstatus_list = [403]`, then reads the
+`RestaurantLocation:` entries straight out of the Apollo state, skipping the ones
+flagged closed or disabled. Eight upstream spiders set that `captcha_type` and 27
+mention Camoufox, so answering this kind of challenge is a maintained, first-class
+thing to do upstream rather than a hack. Were the pages fetchable, the spider here
+would be one request and one JSON blob.
+
+That cuts both ways, and it is worth being plain about which way. It makes the
+Camoufox route cheap, free and well-trodden for every merchant in this table, which
+is the decision still waiting on you. It does not touch the reason this one has no
+spider: an unreadable policy stays unreadable whatever engine fetches the page, and
+a setting in upstream's settings file is not the site's permission. The assistant
+will not point a browser engine at a bot challenge on its own account, and will not
+click one through either - which is where this check stopped, with the challenge
+page on screen and no attempt made to answer it.
 
 Jolly Pumpkin, checked 2026-11-10, is the one in this table that is **worse than
 the rest and partly collectable anyway**, and it is worth setting out because the
