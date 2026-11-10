@@ -154,6 +154,7 @@ project's own software, not as a data pipeline.
 | `raffertys_pizza_us` | 4 | 2026-11-10 |
 | `rams_head_group_us` | 6 | 2026-11-09 |
 | `roka_akor_us` | 5 | 2026-11-06 |
+| `strip_house_us` | 4 | 2026-11-10 |
 | `third_love_us` | 4 | 2026-11-06 |
 | `tom_and_chee_us` | 5 | 2026-11-06 |
 | `wildberry_cafe_us` | 5 | 2026-11-06 |
@@ -783,6 +784,87 @@ What was missing was not the spider but its registration: the commit adds the
 file alone, so `spiders.txt` did not list it and this file did not describe it,
 and a monthly run would have skipped it without anything going wrong to show it.
 Both are added here.
+
+`strip_house_us` is the third Landry's brand on this branch, after
+`aquarium_restaurants_us` and `grotto_ristorante_us`, and the brand check came
+back the same way: `striphouse` appears in no upstream spider, and upstream's
+seven Landry's brands - Morton's, Landry's Seafood, Chart House, Bubba Gump,
+McCormick & Schmick's, Rainforest Cafe and Saltgrass - each cover only their own
+domain. There is no `brand_wikidata`: Strip House is absent from NSI, and
+Wikidata's and Wikipedia's APIs have both been rate-limiting this address all
+week, so nothing could be verified and nothing is claimed.
+
+**The structured data's opening hours are wrong on every venue, and wrong in a
+way that looks right.** The group's `/locations/` page and each restaurant page
+publish the same seven-line `openingHours` block - `Mo 16:00-21:00`, `Tu-Sa
+16:00-22:00`, `Su 16:00-21:00` - on Downtown, Speakeasy and Midtown alike, and
+it matches none of them. Downtown's own page states Friday and Saturday to
+11 PM, not 10. Midtown opens at 11:30 AM from Monday to Friday, not 4 PM. Las
+Vegas carries no `openingHours` at all, which is what gave it away: a field that
+was genuinely per-restaurant would not be identical on three and missing from
+the fourth. So `StructuredDataSpider` reads the addresses, phones and labels,
+and the hours are taken from the page instead.
+
+The hours block needs no content filter, because the markup ends it. The weekly
+rules sit in one `<p>`, which the site follows with an `<h4>Holiday Hours` and a
+block of dated exceptions running to "Fri, Jan 1, 2027" - and a heading closes
+an open paragraph, so the parser leaves those lines outside the `<p>` the spider
+reads. `grotto_ristorante_us` had to recognise its holiday lines by shape, and
+`mortons_the_steakhouse_us` upstream drops them by excluding any line holding a
+four-digit year; here the structure does the work, and the `Pick Up` and
+`Delivery` headings that follow fall outside it the same way.
+
+`SUN - MON` and `SUN - THU` are wrap-around ranges, and `add_ranges_from_string`
+reads them as Sunday with Monday, and Sunday through Thursday, rather than as
+the whole week. Worth testing before trusting rather than after.
+
+**The site's list of venues is in the locator's structured data, not its
+sitemap** - the same lesson as `grotto_ristorante_us`, with one venue at stake
+rather than two. The sitemap names `/downtown/`, `/midtown/` and `/las-vegas/`
+and omits the Speakeasy entirely; `/speakeasy/` answers 404. The `/locations/`
+page states all four as `subOrganization` entries, and the visible list and the
+reservation form's dropdown agree on four, so the count is confirmed three ways.
+Unlike Grotto, no surface here claims a larger number than it publishes.
+
+The Speakeasy is counted as a restaurant of its own, and that is a judgement
+worth recording rather than burying. It has a separate street address - 11 E
+12th St against Downtown's 13 - its own phone, its own page, its own Google
+place id and its own pin a few metres off; it is bookable separately in the
+reservation form; and it serves the Strip House menu rather than drinks alone.
+Its own description explains the arrangement: 11 East 12th Street was a
+Prohibition speakeasy whose hidden connection to 13 East above it meant officers
+arriving with a warrant for "13 East" could not lawfully enter "11". It shares
+Downtown's trading hours, which is the one place two venues here hold the same
+value honestly.
+
+Two fields are dropped and one kept, on the same test. `search_for_facebook` and
+`search_for_twitter` are off because the only accounts on these pages are the
+brand's own, linked from the footer of all four, so `StructuredDataSpider` would
+have filed one Facebook page and one Twitter handle as four restaurants' contact
+details. The images are the opposite case and stay: each venue's `og:image` is
+its own page picture, distinct across the four.
+
+The pin is the `data-gmaps-lat` and `data-gmaps-lng` pair on the page's map
+element, the same source as `grotto_ristorante_us`, and it is a marker rather
+than a viewport - the static map URL beside it centres on the coordinates it
+marks. All four reverse-geocode to where they claim to be, with two differences
+that are right rather than wrong: Midtown resolves to Manhattan rather than New
+York, and Las Vegas to Paradise, NV, the unincorporated town the Strip actually
+lies in. The page agrees with the second, placing that restaurant on the
+mezzanine of the Planet Hollywood casino.
+
+One thing not to carry over from the other Landry's spiders: upstream's seven
+all read a BentoBox `storeLocatorConfig(...)` object from `/store-locator/`, and
+Strip House publishes no such object. `/store-locator/` redirects to
+`/locations/`, and the page it lands on carries the `subOrganization` list
+instead.
+
+`ref` arrived as the structured data's `@id`, which is the page URL with
+`#foodestablishment` appended, and is overridden with the page slug as in
+`grotto_ristorante_us` and `tom_and_chee_us`. `wanted_types` was set to
+`FoodEstablishment` at first and then removed: it is already in
+`StructuredDataSpider`'s default list, and the output was byte-identical without
+it.
 
 `grotto_ristorante_us` is the second Landry's brand on this branch after
 `aquarium_restaurants_us`, and the brand check went the same way: `grotto`
