@@ -159,6 +159,7 @@ project's own software, not as a data pipeline.
 | `the_post_sports_bar_and_grill_us` | 4 | 2026-11-10 |
 | `third_love_us` | 4 | 2026-11-06 |
 | `tom_and_chee_us` | 5 | 2026-11-06 |
+| `tortas_manantial_us` | 4 | 2026-11-10 |
 | `wildberry_cafe_us` | 5 | 2026-11-06 |
 | `tamollys_mexican_kitchen` | 6 | 2026-11-03 |
 | `cyclone_anayas_us` | 5 | 2026-11-03 |
@@ -786,6 +787,77 @@ What was missing was not the spider but its registration: the commit adds the
 file alone, so `spiders.txt` did not list it and this file did not describe it,
 and a monthly run would have skipped it without anything going wrong to show it.
 Both are added here.
+
+`tortas_manantial_us` is **21 lines, the shortest spider on this branch** by
+half, and the first here to subclass one of upstream's store finders. The site
+runs Agile Store Locator, `locations/storefinders/agile_store_locator.py`
+already speaks to it, and `DictParser` fills in everything but the branch name,
+so the spider sets a brand, a domain, a category and a cuisine and gets out of
+the way. Four shops in the Phoenix West Valley. Nothing upstream covers it, it
+is absent from NSI, and Wikidata and Wikipedia are both still rate-limiting this
+address, so there is no `brand_wikidata`.
+
+**Nothing here could be fetched with curl.** Every request to the host - apex
+and `www`, HTTP/2 and HTTP/1.1 - answered `PROTOCOL_ERROR` or "Empty reply from
+server", while a control site answered 200 on the same egress and the proxy
+reported healthy; `urllib` failed the same way. Scrapy's own stack fetches the
+site without complaint, and so does the web fetch tool. So it is a client
+fingerprint the host dislikes rather than a block on the address, it is not
+something `requires_proxy` would help with, and the spider runs normally. It
+does mean the usual hand exploration does not work: every page here was read
+through `scrapy fetch`, which is worth remembering the next time a site looks
+dead from the shell but fine in a browser. This is the same symptom as the
+`jolly_pumpkin` investigation and, again, not a bot wall.
+
+robots.txt carries two `User-agent: *` groups - WooCommerce and `wp-admin`
+disallows in the first, Yoast's empty `Disallow:` in the second - and `protego`,
+the parser Scrapy uses, was asked directly rather than read by eye. Everything
+needed is allowed, no agent is named or refused, and although `/wp-admin/` is
+disallowed the `Allow: /wp-admin/admin-ajax.php` line permits the locator
+endpoint, so `ROBOTSTXT_OBEY` stays on here. `modern_market_us` upstream turns
+it off for the same platform, which is not necessary on this site.
+
+**The locator's `slug` field is the plugin's demo data and must not be used for
+anything.** The Phoenix shop's slug is `port-alfred-restaurant-port-alfred` and
+the Indian School Rd shop's is `grahamstown-restaurant-grahamstown` - Port
+Alfred and Grahamstown are towns in South Africa, shipped as Agile Store
+Locator's sample stores and never cleared - while the Buckeye Rd shop's slug
+reads `tortas-manantial-laveen-laveen-village`, which belongs to a different
+shop. `modern_market_us` upstream builds its `website` from `feature["slug"]`;
+copying that pattern here would have published four wrong URLs, two of them in
+another country. `website` comes from the locator's own `website` field and
+`ref` from its `id`.
+
+**The page URLs are named after cross streets rather than the labels the rest of
+the site uses**, and all four resolve to the right shop, which was checked
+rather than assumed: `/tortas-manantial-phoenix/` is 59th Ave,
+`/tortas-manantial-avondale-blvd/` is Buckeye Rd, `/tortas-manantial-107th-ave/`
+is Indian School Rd, and `/tortas-manantial-laveen/` is Laveen. Each page's
+title names its own intersection and agrees.
+
+**The header navigation is a name behind the rest of the site.** It offers
+"Avondale 107th Ave" where the footer, the restaurant selector and the locator
+all say "Avondale Indian School Rd", for the same shop at 10665 W Indian School
+Rd. `branch` is taken from the locator's `title`, which is the surface the
+business maintains, giving 59th Ave, Avondale Buckeye Rd, Avondale Indian School
+Rd and Laveen.
+
+The hours really are per-shop, which is worth saying after several merchants
+here where they were not: the original 59th Ave shop opens 07:00 to 23:00 every
+day and the other three run 08:00 to 22:00. `email` is one company address on
+all four and is dropped. `state` arrives spelled "Arizona" and the state code
+pipeline resolves it to AZ, which works only because the spelling is exactly
+title case - the trap that silently emptied Houston's state in
+`aquarium_restaurants_us`.
+
+The pins were checked against the Phoenix numbered-avenue grid, which runs eight
+avenues to the mile, because `reverse_geocoder` answers Tolleson for two of the
+four - a nearest-known-place artifact, since Maryvale and north Avondale are not
+in its dataset. The locator's own descriptions place the shops at 59th, 107th
+and 51st Avenues; measured from the 59th Ave pin, Indian School Rd sits 5.7
+miles west where 107th Ave predicts 6.0, and Laveen sits 1.03 miles east where
+51st Ave predicts 1.00. Avondale's grid is offset slightly from Phoenix's, which
+covers the difference.
 
 `the_post_sports_bar_and_grill_us` collects four restaurants around St. Louis
 from one page. Nothing upstream covers it, it is absent from NSI, and Wikidata
