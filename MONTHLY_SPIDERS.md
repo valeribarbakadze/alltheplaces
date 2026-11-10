@@ -153,6 +153,7 @@ project's own software, not as a data pipeline.
 | `james_coney_island_us` | 5 | 2026-11-07 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `kirbys_steakhouse_us` | 4 | 2026-11-10 |
+| `merrimans_us` | 4 | 2026-11-11 |
 | `new_orleans_hamburger_and_seafood_us` | 5 | 2026-11-09 |
 | `on_the_border_us` | 4 | 2026-11-09 |
 | `raffertys_pizza_us` | 4 | 2026-11-10 |
@@ -855,6 +856,73 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`merrimans_us` collects Peter Merriman's four Hawaii restaurants - Waimea on the
+Big Island, Kapalua on Maui, Poipu on Kauai and Honolulu on O'ahu. Nothing
+upstream covers `merrimanshawaii.com` and neither Merriman's nor the group's
+sibling brands are in NSI, so there is no `brand_wikidata`. robots.txt is
+`user-agent: *` with no `Disallow` at all.
+
+The site runs on BentoBox, the platform behind `strip_house_us`,
+`rams_head_group_us` and `grotto_ristorante_us`, but its structured data is
+useless here: the location pages each publish one `application/ld+json` block
+containing `{}`, and the home page adds only a `WebSite` and a `WebPage`. What
+BentoBox does give is the map element that `grotto_ristorante_us` and
+`strip_house_us` also read - a single `div` per page carrying
+`data-gmaps-lat`, `data-gmaps-lng` and `data-gmaps-address` - and that is the
+whole source here.
+
+**Poipu's address is wrong in the source and is stored whole because of it.**
+Its `data-gmaps-address` reads
+`2829 Ala Kalanikaumaka #42 Koloa, Kauai, HI 96756`: the city, Koloa, is stuck
+on the end of the street with no comma, and where the city belongs the site has
+written the island. Split on commas the way the other three allow, that yields
+`addr:city` of "Kauai", which is an island of 1,400 square kilometres. The
+visible address on the page is identical, so this is the merchant's own error
+rather than a parsing artifact, and there is no other source for Koloa on the
+site. Rather than break three addresses apart correctly and one wrongly - or
+write a fix for the one, which the guide forbids - all four go into `addr_full`
+whole, with only the state and postcode taken off the end, where every one of
+the four is well formed. `reverse_geocoder` settles who is right: that pin
+resolves to Koloa.
+
+**The restaurant names are in the page titles and nowhere else usable.** The
+`h1` reads "Merriman's Restaurant Big Island (Waimea)" on three of them and
+"Merriman's Restaurant Honolulu (O'ahu)" on the fourth, which puts the island in
+the brackets on Honolulu and the place in them everywhere else - so reading the
+bracketed word would have filed Honolulu as "O'ahu". The home page links are all
+labelled "Location & Menus" or "RESERVATIONS" and name nothing. The titles state
+the restaurant as the brand writes it, and the home page's own title lists all
+four the same way: "Kapalua, Maui | Poipu, Kauai | Waimea, Big Island |
+Honolulu, O'ahu". Note the apostrophe differs between pages - three use a
+straight one and Honolulu a curly one - so the pattern accepts either.
+
+`ref` is the slug, which is the island rather than the restaurant:
+`big-island`, `maui`, `kauai`, `honolulu`. The site organises itself by island
+and names its restaurants by place, and both are kept - the island as the id the
+site addresses each page by, the place as `branch`. Worth knowing if a monthly
+run is matched on `ref` and expects a restaurant name.
+
+**No `opening_hours`, and this one is not close.** Each restaurant states its
+times by meal service and only one names a day. Waimea gives "Lunch / Monday -
+Saturday: 11:30 am - 2:00 pm", then "Dinner / 5:00 pm - 8:30 pm" with no days,
+then "Sunday Brunch / 10:30 am - 1:00 pm". Kapalua says "Open daily for dinner
+reservations / 4:00 pm - 8:30 pm" and separately that its Oceanfront Point
+"opens daily at 3:00 pm". Poipu gives "5:00 pm - 8:00 pm" and no days. Honolulu
+gives "11:00 am - 9:00 pm" and no days. A parser that kept only day-qualified
+lines would have collected Waimea's lunch alone and published a restaurant that
+shuts at 2 pm and never opens for dinner, which is worse than an empty field.
+The pages also carry live music times, two happy hours at Kapalua and a list of
+holiday dates at Honolulu. If the likely reading is worth more than nothing,
+`Mo-Su` at the single range each page leads with would be the guess to make -
+17:00-20:00 at Poipu, 11:00-21:00 at Honolulu, 16:00-20:30 at Kapalua - but it
+is a guess, and Waimea has no single range to guess from.
+
+Three of the four pins corroborate the names independently: Poipu's resolves to
+Koloa, Waimea's to Waimea even though its postal city is Kamuela, and Honolulu's
+to Honolulu. Kapalua's resolves to Napili-Honokowai, which adjoins it on Maui's
+west side. `cuisine` is `hawaiian`, which upstream already uses, for a group
+whose chef is one of the founders of Hawaii regional cooking.
 
 `iii_forks_us` collects four steakhouses - Austin, Frisco, Jacksonville and the
 one at Addison the brand calls Dallas - and is 40 lines, because the structured
