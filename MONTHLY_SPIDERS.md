@@ -2238,7 +2238,7 @@ invites crawling and then put Cloudflare's **managed** challenge in front of eve
 page. That challenge answers any client which does not run JavaScript, so it is not
 a datacenter address being refused: a plain `curl` and a plain Scrapy request are
 both turned away from any network, home ones included. The first five were each
-tested from two networks on 2026-11-06; the two added on 2026-11-10 and the one
+tested from two networks on 2026-11-06; the two added on 2026-11-10 and the two
 added on 2026-11-11 are noted below with what was actually tested for them.
 
 | merchant | state |
@@ -2251,6 +2251,7 @@ added on 2026-11-11 are noted below with what was actually tested for them.
 | Jolly Pumpkin, `jollypumpkinpubs.com` | not written, by decision. Three of the brand's four venues live here - Ann Arbor, East Lansing, Traverse City - and robots.txt is challenged along with the pages, so the policy cannot be read at all. Its fourth venue is collectable and was still left alone; see below. |
 | Yolanda's Mexican Cafe, `yolandasmexicancafe.com` | not written. Three restaurants implied by the sitemap's per-location menu pages: camarillo, oxnard, ventura. robots.txt is challenged along with every page, so the policy cannot be read; `/sitemap.xml` is the one path served, and it names no locations page. |
 | The Union Kitchen, `theunionkitchen.com` | not written. Five or six restaurants around Houston, implied by sitemap slugs only: Memorial, Kingwood, Towne Lake, Cypress, Katy, Ella. robots.txt is `403` and challenged on both hosts, and stayed challenged in a real browser on a home connection, so the policy cannot be read. A PopMenu site, which is the gate upstream already knows how to get through. |
+| Whiskey Joe's, `thewhiskeyjoes.com` | not written. Four or five waterfront restaurants in Florida - Tampa, Manatee River, Port Richey, Pensacola Beach, with Port Charlotte reported under way. robots.txt is `403` and challenged on both hosts and in a real browser, so the policy cannot be read. Same gate and the same platform shape as The Union Kitchen, checked an hour apart. |
 
 Tommy John is the one of the five where the gate reaches furthest: its sitemap is
 challenged along with everything else, so not even the store list can be read from
@@ -2377,6 +2378,51 @@ a setting in upstream's settings file is not the site's permission. The assistan
 will not point a browser engine at a bot challenge on its own account, and will not
 click one through either - which is where this check stopped, with the challenge
 page on screen and no attempt made to answer it.
+
+Whiskey Joe's, checked 2026-11-11 within the hour of The Union Kitchen, is the
+**second unrelated merchant that hour with the identical gate**, and the pair is
+more informative than either on its own. Both hosts answer `/robots.txt` with `403`
+and Cloudflare's managed challenge; the browser pane on your laptop was served the
+same `403` page and was still on it twenty-two seconds later, which is the second
+confirmation in an hour that this gate has nothing to do with datacenter addresses.
+No spider, for the reason given above: the policy cannot be read.
+
+What the pair settles is that **the selective-sitemap quirk belongs to the platform,
+not to the merchant**. Both run PopMenu, and both serve `/sitemap.xml` in full as
+plain XML to a plain Scrapy request while `/sitemap_index.xml`, `/store-locator` or
+`/locations`, and every other HTML path are challenged. The shape is the same down
+to the details: a priority-only urlset, the bulk of it `/items/` menu entries - 296
+of 368 here, with 9 `/menus/` - and a `/posts/` section. Fadó and Strong's were
+read as sharing hosting because their robots.txt matched to the byte; this is the
+same observation from the other direction, and it suggests the quirk will recur on
+any PopMenu site that arms the challenge.
+
+**Unlike The Union Kitchen, this sitemap names its locations outright**, which makes
+it the clearest case on this list of a spider that is blocked on permission rather
+than on difficulty: `/whiskey-joes-tampa-fl`, `/whiskey-joes-manatee-river-fl` and
+`/whiskey-joes-port-richey-fl`, each a page of its own, plus the gated
+`/store-locator`. There is also a `/tampa-menus`, `/manatee-river-menus` and
+`/port-richey-menus` trio, and `-events`, `-press` and `-contact-events` pages per
+restaurant, so the per-location structure is consistent.
+
+**The sitemap nonetheless undercounts the brand, and that is the trap worth
+recording.** Pensacola Beach has no page in the sitemap at all, but five `/posts/`
+name it, among them `pensacola-beach-main-restaurant-now-open` and
+`wj-pensacola-beach-industry-night`. The trade press has Pensacola Beach as the
+brand's fifth opening and a Port Charlotte restaurant on Charlotte Harbor breaking
+ground after it. So a spider written off this sitemap would have published three
+restaurants of four or five and looked complete while doing it - the
+`pietros_pizza_us` lesson in reverse, where the sitemap offered two too many rather
+than two too few. Whoever collects this should start from `/store-locator` once it
+is readable, not from the sitemap.
+
+The brand was checked against Landry's deliberately, since this branch carries four
+Landry's brands and upstream has `landrys_seafood_us`: nothing upstream covers
+`thewhiskeyjoes.com` or the name, nothing on this branch does, and the brand is
+absent from NSI with no Wikidata item, so there would be no `brand_wikidata`. The
+press coverage reads as an independent Gulf-coast group rather than a Landry's one,
+but that came from search results rather than from the brand's own pages, so the
+operator is worth confirming from the pages themselves if the gate is ever answered.
 
 Jolly Pumpkin, checked 2026-11-10, is the one in this table that is **worse than
 the rest and partly collectable anyway**, and it is worth setting out because the
