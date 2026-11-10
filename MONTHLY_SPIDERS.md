@@ -156,6 +156,7 @@ project's own software, not as a data pipeline.
 | `rams_head_group_us` | 6 | 2026-11-09 |
 | `roka_akor_us` | 5 | 2026-11-06 |
 | `strip_house_us` | 4 | 2026-11-10 |
+| `the_post_sports_bar_and_grill_us` | 4 | 2026-11-10 |
 | `third_love_us` | 4 | 2026-11-06 |
 | `tom_and_chee_us` | 5 | 2026-11-06 |
 | `wildberry_cafe_us` | 5 | 2026-11-06 |
@@ -785,6 +786,90 @@ What was missing was not the spider but its registration: the commit adds the
 file alone, so `spiders.txt` did not list it and this file did not describe it,
 and a monthly run would have skipped it without anything going wrong to show it.
 Both are added here.
+
+`the_post_sports_bar_and_grill_us` collects four restaurants around St. Louis
+from one page. Nothing upstream covers it, it is absent from NSI, and Wikidata
+and Wikipedia are both still rate-limiting this address, so there is no
+`brand_wikidata`.
+
+**The sitemap offers a list of five locations and the fifth is a staff
+archive.** `managerlocation-sitemap.xml` names `/location/maplewood/`,
+`/location/fenton/`, `/location/creve-coeur/`, `/location/lake-saint-louis/`
+and `/location/plt/`, which reads as the location list and is not one: it is a
+taxonomy of managers by location, and `/location/plt/` is titled "PLT Archives"
+with four people's names as its headings. Driving the spider from that sitemap
+would have published a restaurant made out of a staff page. The four are
+confirmed by the menu, beer and spirits sub-pages, which exist for those and
+not for `plt`, and by the picker on `/locations/`. None of the five is a
+restaurant page in any case - `/location/maplewood/` is the manager archive for
+Maplewood, not the restaurant - so there are no per-restaurant pages to follow
+and no `website` on these records.
+
+**The page's own structured data describes two of the four restaurants.**
+Maplewood and Creve Coeur appear as `Restaurant` entries in a hand-written
+"Multisite Schema from Chris Gans" block; Fenton and Lake Saint Louis are
+absent from it. It also nests `telephone` inside `address` and spells its hours
+key `OpeningHoursSpecification`, which no parser reads. So
+`StructuredDataSpider` here would have collected half the chain with no hours,
+and reported nothing wrong.
+
+**Where the two surfaces overlap they disagree, and the structured data is the
+stale one.** Its Friday and Saturday close at 01:00 where the picker closes at
+midnight; Monday to Thursday and Sunday agree exactly, which is the
+corroboration for the two restaurants it covers. The picker won because it is
+what the site shows a visitor and what drives the live open/closed indicator,
+while the schema block is demonstrably unmaintained - two restaurants missing,
+under a key nothing reads, so no one would see it drift. The same shape as
+`strip_house_us`, where the structured hours were brand-wide boilerplate, and
+the reverse of `grotto_ristorante_us`, where the prose was stale and the
+structured list was kept.
+
+Everything comes off `/locations/`, where each restaurant is a
+`tracking-location-item` carrying `data-location`, `data-address` with the
+street and locality separated by a literal `<br>`, `data-phone`, `data-lat` and
+`data-lng`, and `data-hours` as a day-keyed JSON object. Structured values, so
+the hours go through `add_range` rather than `add_ranges_from_string`.
+`11am - 12am` is a midnight close and `time_format="%I%p"` renders it
+`11:00-24:00`; read as `00:00` it would have said the opposite of what it means.
+
+**"Closed" beside each restaurant is the live status, not a closure.** The
+picker prints `data-status` next to "Today's Hours", so reading the visible text
+would have recorded four closed restaurants - these pages were fetched about
+twenty minutes before the 11:00 opening, Central time.
+`data-today-open` and `data-today-close` are one day's times and are ignored for
+the same reason.
+
+`data-facebook` is per-restaurant and is kept. `data-twitter` and
+`data-instagram` are per-restaurant for Creve Coeur and Fenton
+(`TheposttweetsC`, `thepostup_fenton`) and the brand's own accounts for
+Maplewood and Lake Saint Louis, so both fields are dropped rather than filing
+the brand's handle as two restaurants' own - the partial version of what was
+dropped wholesale in `strip_house_us`.
+
+**Maplewood's postal city is St. Louis.** The address reads "St. Louis, MO
+63143" and the structured data agrees, while the pin reverse-geocodes to
+Maplewood, which is its own municipality in St. Louis County. `city` holds the
+postal one and `branch` the municipality, both correct. Worth knowing if a
+monthly run is matched on city rather than postcode. The other three pins
+reverse-geocode to exactly the city they stated.
+
+`DOWNLOAD_DELAY` is raised to 10 for this one spider. robots.txt opens with
+" Crawl-delay: 10" as its first line, above any `User-agent:`, where it belongs
+to no group - `protego`, the parser Scrapy itself uses, reports `crawl_delay` as
+None for every agent asked, and `Disallow:` is empty so nothing is restricted.
+The directive is void as written, but the intention is not in doubt and four
+restaurants come off a single page, so honouring it costs seconds. Drop the
+`custom_settings` line if this branch would rather never vary throttling.
+
+One thing to be wary of: **Maplewood's `data-map` holds injected link spam** - a
+paragraph fixed off-screen at `opacity:0` with `pointer-events:none`, carrying a
+link to an AI-research site, sitting inside the Google Maps iframe markup. The
+other three `data-map` values are the iframe alone. Nothing here reads
+`data-map`, since the coordinates come from `data-lat` and `data-lng`, but it
+means something has written into that field, and anything taken from it later
+should be treated as untrusted. The stale `/locations-old/` tree is still in the
+sitemap as well, with its own Creve Coeur, Fenton, Lake Saint Louis and two
+Maplewood pages.
 
 `grove_wine_bar_and_kitchen_us` collects four restaurants around Austin. The
 brand check found nothing upstream and nothing in NSI, and Wikidata and
