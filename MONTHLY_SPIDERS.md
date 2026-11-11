@@ -157,6 +157,7 @@ project's own software, not as a data pipeline.
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `kirbys_steakhouse_us` | 4 | 2026-11-10 |
 | `llywelyns_pub_us` | 3 | 2026-11-11 |
+| `mannys_chophouse_us` | 2 | 2026-11-11 |
 | `merrimans_us` | 4 | 2026-11-11 |
 | `native_foods_us` | 2 | 2026-11-11 |
 | `new_orleans_hamburger_and_seafood_us` | 5 | 2026-11-09 |
@@ -862,6 +863,80 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`mannys_chophouse_us` collects two steakhouses in Polk County, Florida: Haines
+City and Winter Haven. Nothing upstream covers `mannyschophouse.com` or the
+name, and NSI holds no "manny" entry at all. Wikidata was still rate-limiting
+this egress, so `brand_wikidata` is omitted.
+
+robots.txt is the same on both hosts and is the third shape this branch has seen:
+a `user-agent: *` line, a blank line, and a `Sitemap:` line - a group with no
+directives in it at all. `protego` reads that as permitted for every agent with
+no crawl delay, which is right: a group that states no rule forbids nothing. It
+is not the same as an absent file and not the same as a challenge in place of
+one.
+
+**The sitemap is the locator, and the spider lets it stay that way.** It lists
+eleven URLs, two of which are the restaurants - `/haines-city/` and
+`/winter-haven/` - with no shared prefix to match on and no `/locations/` page
+anywhere. Naming the two city slugs in `sitemap_rules` would hardcode today's
+footprint, so the rule matches everything and `parse_location` returns early
+unless the page states an address. Eleven requests is nothing, `/contact/` is
+not mistaken for a restaurant because it carries both phone numbers but no
+address at all, and a third restaurant added to the sitemap is collected with no
+change to the spider.
+
+**The structured data is a decoy.** Each location page carries one `ld+json`
+block and it is an `Organization` describing the brand - the same `@id`, name,
+logo and description on both pages, no address, and a `sameAs` holding the
+brand's Facebook and Instagram. Had this been handed to `StructuredDataSpider`
+with `Organization` in `wanted_types`, both restaurants would have come out
+identical and both would have carried brand-wide social accounts as if they were
+per-restaurant. The spider reads the page instead. This is BentoBox, the same
+platform as `merrimans_us`, but without the `data-gmaps-lat` element that one
+reads - these pages carry no map of any kind, so both records have a null
+geometry.
+
+**"12 Noon" is a spelling the parser does not hold, and only one restaurant uses
+it.** Both pages state the same three rules, but Haines City writes "Sunday: 12
+pm - 9:00 pm" and Winter Haven writes "Sunday: 12 Noon - 9:00 pm".
+`NAMED_TIMES_EN` contains exactly two entries, `Midday` and `Midnight` - there is
+no `Noon` in it - so Winter Haven's Sunday rule returned nothing, silently, and
+that restaurant would have been published as closed on Sundays. The fix is the
+`pietros_pizza_us` one in the other parameter: `named_times` is passed as
+`NAMED_TIMES_EN | {"12 Noon": NAMED_TIMES_EN["Midday"]}`, reusing Midday's own
+`["12:00PM", "12:00"]` pair rather than writing new values. Both then read
+`Mo-Th 16:00-22:00; Fr-Sa 16:00-22:30; Su 12:00-21:00`.
+
+That the two schedules come out identical is worth a word, since identical values
+across records are usually the warning sign this branch checks for. Here they are
+genuinely the same hours, stated separately on each restaurant's own page in
+different words - which is itself the evidence that they were read per page
+rather than copied from one.
+
+**The holiday paragraph is left alone deliberately.** Each page follows its hours
+with a second paragraph reading "Holiday Hours:", then "July 4th Closed",
+"Thanksgiving Closed", "Christmas Eve Closed" and "Christmas Day Closed". Those
+are dated closures rather than a weekly schedule, so the spider scopes its rules
+to the paragraph containing "Hours of Operation" and skips that paragraph's own
+label line. As it happens all four holiday lines parse to nothing, so feeding
+them in would have been harmless today - but the `aquarium_restaurants_us` lesson
+is that a neighbouring block of hours is only harmless until the wording changes.
+
+One thing found and deliberately not collected: the Haines City page carries a
+section headed "Owned and Operated by the Nikolaidis Family" stating "Angie Of
+Polk County, Inc DBA Manny's Original Chophouse". That is the operating company
+for that restaurant and would fit `operator`, but it sits in a page-level section
+outside the location block and appears on only one of the two pages, so reading
+it would have meant a second selector for a single record. It is recorded here
+instead, since a legal entity name is the sort of thing a merchant match wants.
+
+`brand` is "Manny's Original Chophouse", the name in both page titles and in the
+`Organization` block; the monthly list and the domain both say Manny's Chophouse,
+which is what the file is named for. `ref` and `website` are the restaurant's own
+page URL. `cuisine` is `steak_house`, as on `strip_house_us` and `iii_forks_us`.
+Both Toast ordering links carry the street addresses in their slugs, which
+corroborates both independently of the page text.
 
 `llywelyns_pub_us` collects three pubs across two sites: Webster Groves and
 Historic St. Charles from `llywelynspub.com`, and Lee's Summit from
