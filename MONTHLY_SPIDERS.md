@@ -155,6 +155,7 @@ project's own software, not as a data pipeline.
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `kirbys_steakhouse_us` | 4 | 2026-11-10 |
 | `merrimans_us` | 4 | 2026-11-11 |
+| `native_foods_us` | 2 | 2026-11-11 |
 | `new_orleans_hamburger_and_seafood_us` | 5 | 2026-11-09 |
 | `on_the_border_us` | 4 | 2026-11-09 |
 | `pietros_pizza_us` | 3 | 2026-11-11 |
@@ -858,6 +859,106 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`native_foods_us` collects two restaurants: Glendale, Colorado and Palm Springs,
+California. It is the sixth spider on this branch to carry a `brand_wikidata`,
+after `hoffbrau_steak_and_grill_house_us`, `james_coney_island_us`,
+`mitchells_fish_market_us`, `on_the_border_us` and `third_love_us`. `Q18636327`
+was verified the way AGENTS.md asks: the item's official-website claim is
+`http://www.nativefoods.com/`, which is this exact site, its country is the US
+and it carries no dissolution date. NSI has no Native Foods entry at all - the
+only near miss is `Native Grill & Wings`, `Q69599983`, a different chain whose
+QID was not borrowed.
+
+**Two restaurants is the whole brand now, and the site says so in as many
+words.** Native Foods was founded in Palm Springs in 1994 and grew into a
+national vegan chain; the home page states that "In 2023, the national chain
+went out of business and the two remaining locations were purchased by Sean
+Reynolds & Misti Rausch (Palm Springs) and Michael Olivas (Denver), who were the
+former managers of their respective locations". So this is not a chain of two so
+much as two separately owned restaurants sharing a name, a website and the word
+"sister restaurants". That is worth recording because it is exactly the question
+AGENTS.md says to ask before setting `brand` on something absent from NSI.
+Wikidata still carries it as a restaurant chain and still points at this site,
+which is the check that was available, so the QID is set.
+
+**The name has quietly lost its "Café".** Wikidata labels it "Native Foods Cafe"
+and that is how the chain was known, but the current site says "Native Foods" in
+the logo, the title, the footer business name and the structured data, and the
+strings "Cafe" and "Café" appear nowhere in the page at all. `brand` follows the
+site rather than the Wikidata label or the older name.
+
+**Only Glendale is in the structured data.** The page carries one `LocalBusiness`
+block with address, `geo`, telephone and an `openingHoursSpecification` that
+`LinkedDataParser` reads as `Mo-Fr 11:00-21:00; Sa-Su 09:00-21:00`. Three of its
+fields are dropped. `@id` is a GoDaddy placeholder domain,
+`http://6934e04e.c6d1.4502.81dc.472730b5645d.com`, so `ref` comes from the city
+instead. `image` is a Getty stock photo the site builder supplied. `url` is
+`nativefoods.com` with no scheme, and it is the brand's site shared with Palm
+Springs, so `website` is dropped rather than filed on both records as if it were
+per-restaurant. `addressCountry` is the empty string, which `LinkedDataParser`
+drops on its own; the `_us` suffix supplies `US`.
+
+**Palm Springs exists only in the footer, in a field meant for one address.** The
+owner typed both restaurants into GoDaddy's single address field - "680 Colorado
+Boulevard, Glendale, CO 80246, USA  /  1775 E Palm Canyon Drive, Suite 420 Palm
+Springs, California 92264" - with the two phone numbers in a matching field
+labelled "(DENVER)" and "(PS)". The spider splits that line on the slash, pairs
+the parts with the `tel:` links in order, and **skips the part whose postcode
+matches the structured data's**, so Glendale always comes from the ld+json and
+whatever else is listed comes from the footer. That is also the guard if a third
+restaurant is ever typed into the same field. The Palm Springs part has no comma
+between "Suite 420" and the city and spells the state out in full, which the
+pattern survives because its city group has to start on a capital letter and so
+cannot begin inside "420"; `StateCodeCleanUpPipeline` turns "California" into
+`CA`.
+
+**Palm Springs gets no coordinates and no hours, and its own site is why.** There
+is no map link anywhere on the page, so there is nothing to read a pin from -
+`extract_google_position` would have found nothing and was not called. The
+restaurant's own site, `nativefoodsps.com`, answers `403` with Cloudflare's
+managed challenge while its robots.txt reads fine and permits everything but
+`/admin`, `/account`, `/checkout`, `/cart` and `/confirm`: that is the
+`texadelphia` case to the letter, including a sitemap served from a CloudFront
+host. That sitemap is readable and corroborates the address, in a menu-item URL
+ending `native-foods-1775-east-palm-canyon-drive-suite-420`. Nothing was
+collected from the gated site. So Glendale carries a pin and hours and Palm
+Springs carries neither, which is the honest shape of what the readable pages
+state.
+
+`diet:vegan` is `only`, not `yes`, because everything both restaurants serve is
+vegan and `apply_yes_no` only writes yes or no. **The enum cannot be used as the
+key here.** Writing `item["extras"][Extras.VEGAN] = "only"` crashes
+`PhoneCleanUpPipeline` with `'Extras' object has no attribute 'endswith'`,
+because that pipeline walks every key in `extras` looking for phone-ish tags and
+calls `.endswith()` on each. `Extras.VEGAN.value` is required.
+`apply_yes_no` does that conversion internally, which is why no upstream spider
+runs into it - `ikes_us` is the only one that touches `Extras.VEGAN` and it goes
+through `apply_yes_no`. No `cuisine` is set: the food is vegan American comfort
+food and any value for it would have been invented, while `diet:vegan=only`
+carries the real information.
+
+`branch` is the city on both records, as `iii_forks_us` does. The brand markets
+Glendale as "Denver" - "DENVER MENU", the "(DENVER)" footer label, a
+`denver.nativefoods` Instagram and an Olo slug of `native-foods-glendale` - but
+the restaurant's locality is Glendale, Colorado, inside the Denver metro, so
+`branch` follows the address rather than the marketing. `reverse_geocoder` puts
+the pin in Glendale, Arapahoe County, Colorado, about half a kilometre from the
+town centroid.
+
+robots.txt on `nativefoods.com` is `User-agent: *`, one `Disallow: /404` and a
+sitemap line, which `protego` reads as permissive for every agent with no crawl
+delay, so there is no `DOWNLOAD_DELAY`. The sitemap is useless rather than
+restrictive: it is a `sitemapindex` naming `sitemap.website.xml`, which holds the
+home page and nothing else, and `sitemap.ols.xml`, which answers a `500 Internal
+Server Error` page. `www.nativefoods.com` times out entirely on every path, so
+the apex host is the start URL.
+
+**The host is intermittently flaky and the spider is not.** One run in five lost
+the connection fetching robots.txt, `twisted.internet.error.ConnectionLost`,
+which Scrapy's default retries absorbed; five consecutive runs each produced both
+restaurants with identical output. Nothing was changed about retries or
+throttling, per AGENTS.md.
 
 `husk_us` collects three restaurants - Charleston, Nashville and Savannah.
 Nothing upstream covers `huskrestaurant.com` or any of the three restaurant
