@@ -167,6 +167,7 @@ project's own software, not as a data pipeline.
 | `pietros_pizza_us` | 3 | 2026-11-11 |
 | `raffertys_pizza_us` | 4 | 2026-11-10 |
 | `rams_head_group_us` | 6 | 2026-11-09 |
+| `remke_markets_us` | 5 | 2026-11-11 |
 | `roka_akor_us` | 5 | 2026-11-06 |
 | `strip_house_us` | 4 | 2026-11-10 |
 | `the_post_sports_bar_and_grill_us` | 4 | 2026-11-10 |
@@ -865,6 +866,61 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`remke_markets_us` collects five supermarkets around Cincinnati - four in
+northern Kentucky and one across the river in Harrison, Ohio - and is **21
+lines, tied with `tortas_manantial_us` as the shortest spider on this branch**.
+It is also the branch's **first supermarket**: everything here so far has been
+somewhere to eat, a salon, a spa, a lingerie shop or a cinema. Nothing upstream
+covers `remkes.com` or the name, NSI has no Remke entry, and Wikidata was still
+rate-limiting, so `brand_wikidata` is omitted.
+
+**It is short because the site runs Agile Store Locator**, which upstream
+already has a store finder for, and which this branch has met once before on
+`tortas_manantial_us`. Subclassing `AgileStoreLocatorSpider` and naming the
+domain is the whole of it: the base class builds the
+`/wp-admin/admin-ajax.php?action=asl_load_stores&load_all=1` request, runs
+`DictParser` over the response and parses the plugin's `open_hours` JSON, so
+`post_process_item` only has to move the name into `branch`, set the website and
+apply the category. The entire run is two requests, robots.txt and the endpoint.
+
+robots.txt is the WordPress default - `Disallow: /wp-admin/` with
+`Allow: /wp-admin/admin-ajax.php` carved back out - so the endpoint this spider
+reads is **explicitly permitted by name**, which is worth recording because the
+path otherwise looks like exactly the sort of thing a spider should not be
+touching. `protego` agrees: `admin-ajax.php` fetchable, the rest of `/wp-admin/`
+not, no crawl delay.
+
+The sitemap would also have worked and is not used. It names a page for each
+store - `/harrison/`, `/buttermilk-towne-center/`, `/turfway/`, `/taylor-mill/`
+and `/turkeyfoot/` - among 83 URLs that are otherwise promotions, so it would
+have needed a discriminator and five page fetches to produce what the locator
+hands over in one.
+
+**`about_us` is stated on one store of five**, which is why `website` is set
+conditionally rather than for everyone. Buttermilk Towne Center gives
+`/buttermilk-towne-center`; Harrison, Taylor Mill, Turfway and Turkeyfoot give
+an empty string, even though the sitemap shows all five pages exist. Their URLs
+could be built by slugifying each title - every one matches - but that is
+constructing a URL the source declines to state, so four records simply have no
+website and the uneven result is the honest one.
+
+All five state the same hours, `Mo-Su 06:00-23:00`, each in its own
+`open_hours` object inside its own record rather than once for the brand, so
+they are filed per store. `description` reads "In-Store Pickup Available" on
+four of the five and is not mapped: `Categories.PRODUCT_PICKUP` is a POI type in
+its own right rather than an attribute of a supermarket, and `Extras.DELIVERY`
+and `Extras.PARCEL_PICKUP` both mean something else, so tagging it would have
+meant inventing. `email`, `website` and `fax` are empty on all five, and the
+plugin's own `brand` field is empty or null throughout, which is worth a glance
+because a populated one would have overwritten `item_attributes`.
+
+`reverse_geocoder` agrees with four of the five exactly - Crescent Springs,
+Harrison, Taylor Mill and Florence, each in the right county - and answers
+Elsmere for Turkeyfoot, which is the neighbouring city inside the same Kenton
+County rather than the stated Independence. That is the `walnut_grill_us`
+pattern once more. The one Ohio store lands in Hamilton County, Ohio, as its
+address says.
 
 `cinema_cafe_us` collects five cinemas in Virginia - Chester, south of Richmond,
 and four in Hampton Roads - and is **the first cinema on this branch**, which
