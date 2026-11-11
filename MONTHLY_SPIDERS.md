@@ -169,6 +169,7 @@ project's own software, not as a data pipeline.
 | `rams_head_group_us` | 6 | 2026-11-09 |
 | `remke_markets_us` | 5 | 2026-11-11 |
 | `roka_akor_us` | 5 | 2026-11-06 |
+| `snappy_salads_us` | 8 | 2026-11-11 |
 | `strip_house_us` | 4 | 2026-11-10 |
 | `the_post_sports_bar_and_grill_us` | 4 | 2026-11-10 |
 | `third_love_us` | 4 | 2026-11-06 |
@@ -866,6 +867,71 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`snappy_salads_us` collects eight restaurants across Dallas-Fort Worth, which
+makes it the largest count on this branch since `the_palm`. Nothing upstream
+covers `snappysalads.com` or the name. NSI holds plenty of near misses and none
+of them is this - Evergreens Salad, Salad and Go, Eat Salad, Chicken Salad
+Chick, Just Salad, Saladworks, and two unrelated Snappys, `Snappy Snaps` and
+`Snappy Tomato Pizza`, the latter of which upstream already carries as
+`snappy_tomato_pizza_us`. Wikidata was still rate-limiting, so no
+`brand_wikidata`.
+
+robots.txt is the Manny's shape: `user-agent: *`, a blank line and a `Sitemap:`
+line, with no directive anywhere in the group, which forbids nothing. The
+sitemap is six URLs and names `/hours-and-locations/` but none of the eight
+restaurant pages, so it is no use as a locator.
+
+**This is the `strip_house_us` pattern on BentoBox.** The locations page carries
+an `Organization` whose `subOrganization` array holds all eight restaurants as
+`FoodEstablishment` entries with their addresses, so the spider reads that array
+for the URLs and follows each. It has to follow: the array states no
+coordinates, and each restaurant's own page carries the BentoBox
+`data-gmaps-lat` element that `merrimans_us` reads. Three BentoBox sites on this
+branch now, each needing a different part of the page - Merriman's the map
+element, Manny's the prose, and this one both the structured data and the map.
+
+**Hours are read from the page rather than the structured data, and the reason
+is that the structured data mostly lacks them.** Only the first of the eight
+`FoodEstablishment` blocks carries `openingHours`; the other seven omit the key
+entirely, on the locations page and on their own pages alike. Left to
+`StructuredDataSpider`, seven of eight records came out with no hours at all.
+The pages themselves state hours in prose for all eight, so those are read
+instead, and Greenville Avenue is the check on that: its prose parses to
+`Mo-Sa 11:00-21:00; Su 11:00-20:00`, exactly what its own `openingHours` array
+says.
+
+The line is only fed to the parser when it contains a time, which is a filter
+rather than a convenience. The Harwood page states "LABOR DAY (9/7/26): CLOSED"
+in the same block as its hours - a dated closure, and a stale one - and the
+Preston & Forest and Frisco pages are built the same way. Requiring a digit
+followed by am or pm keeps those out by construction rather than by luck, and
+it also excludes the address lines, which share the same `p` elements.
+
+**Harwood is the one to look at twice and it is correct.** It reads
+`Mo-Fr 09:00-15:00` where the other seven read `Mo-Sa 11:00-21:00;
+Su 11:00-20:00`. It is the downtown Dallas restaurant, at street level in an
+office tower, and weekday lunch hours are what its page states. A spider that
+had quietly copied the other seven's schedule onto it would have been wrong six
+days a week.
+
+`telephone` is an empty string on all eight, so no record carries a phone: this
+brand publishes none. `email` is stated on exactly one, Watters Creek, as
+`watterscreek@snappysalads.com`, and is kept because it is that restaurant's
+own rather than a brand mailbox. `branch` drops the city the name repeats after
+a comma, as on `cinema_cafe_us`, giving Greenville Ave, Preston & Forest,
+W Park Blvd, Frisco Market Center, Las Colinas, Campbell & 75, Watters Creek and
+Harwood. The per-restaurant `image` is kept; `description` is not, since it
+holds a run-together "General Manager" plus a name rather than anything about
+the place.
+
+`reverse_geocoder` agrees outright on Dallas, Allen, Richardson and Frisco, and
+answers a neighbouring suburb for the other four - Farmers Branch for Las
+Colinas, Addison for both W Park Blvd and Preston & Forest, University Park for
+Greenville Avenue. All eight are in Texas and in the metroplex, and in a metro
+packed this tightly the nearest entry in that dataset is routinely the next
+municipality over; the pins come from the site's own map element and agree with
+the addresses beside them.
 
 `remke_markets_us` collects five supermarkets around Cincinnati - four in
 northern Kentucky and one across the river in Harrison, Ohio - and is **21

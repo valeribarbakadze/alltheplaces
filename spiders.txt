@@ -54,6 +54,7 @@ rams_head_group_us
 remke_markets_us
 roka_akor_us
 seoul_taco_us
+snappy_salads_us
 stefaninas_pizzeria_us
 strip_house_us
 tamollys_mexican_kitchen
