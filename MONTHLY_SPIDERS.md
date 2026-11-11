@@ -144,6 +144,7 @@ project's own software, not as a data pipeline.
 | `copper_river_grill_us` | 5 | 2026-11-05 |
 | `duckworths_grill_and_taphouse_us` | 5 | 2026-11-06 |
 | `european_street_cafe_us` | 3 | 2026-11-10 |
+| `grabbagreen_us` | 2 | 2026-11-11 |
 | `granville_us` | 5 | 2026-11-06 |
 | `grotto_ristorante_us` | 4 | 2026-11-10 |
 | `grove_wine_bar_and_kitchen_us` | 4 | 2026-11-10 |
@@ -859,6 +860,96 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`grabbagreen_us` collects two restaurants, both in Bell County, Texas: Temple and
+Killeen. Nothing upstream covers `grabbagreen.com` or the name, and the brand is
+absent from NSI. Wikidata was rate-limiting this egress by the time the brand
+check got to it, so `brand_wikidata` is omitted rather than guessed.
+
+**The locator belongs to the brand's franchisor group, and the host that serves
+it disallows everyone.** The footer reads "©2026 MTY Franchising USA, Inc." and
+the site links `kahalamgmt.com`, which is how the group was spotted; the AMP
+locator page turns out to be two `amp-iframe` tags and no store data, one of them
+pointing at
+`locator.kahalamgmt.com/locator/index.php?brand=34&mode=map`. That host's
+robots.txt is two lines - `User-agent: *` and `Disallow: /` - a blanket refusal
+of every crawler.
+
+Upstream has three spiders on this same `Locator.stores` payload and they do not
+agree with each other. `blimpie_us` reads it from `www.blimpie.com/stores/` and
+`taco_time_us` from `www.tacotime.com/stores/`, both the brands' own hosts, with
+no robots override. `sweetfrog_us` points straight at
+`locator.kahalamgmt.com/locator/index.php?mode=desktop&brand=38` and carries
+`custom_settings = {"ROBOTSTXT_OBEY": False}` to get past the blanket disallow.
+**This spider follows the first two and not the third.** The brand's own host
+serves the identical payload at
+`www.grabbagreen.com/locator/index.php?brand=34&mode=map`, and
+`grabbagreen.com`'s robots.txt - the same on both hosts - allows everything but
+`/jobs/applications`, `/survey` and `/gift-cards/cart`, with no crawl delay. So
+the policy governing the request is the brand's own and it permits it, and
+`locator.kahalamgmt.com` is never contacted. Worth writing down because the
+upstream spider on the same data resolves it the other way, and copying
+`sweetfrog_us` would have meant disabling robots.txt on a site that refuses
+everyone.
+
+The brand number is 34, read off that iframe; sweetFrog is 38. A third host,
+`order.grabbagreen.com`, also answers `Disallow: /` to `User-agent: *` and then
+allows Googlebot, Bingbot, DuckDuckBot, Slurp and Google's ad crawlers by name,
+so the per-store ordering pages were not read either. The payload's own
+`SEOPath` values 404 on `grabbagreen.com`, so there are no per-store pages to
+follow and no `website` is set.
+
+**It is not a radius API, which was worth checking rather than assuming.** The
+same two stores come back from the US centroid, from Phoenix, from Los Angeles,
+with `pagesize=500`, with `radius=5000` and with no coordinates in the query at
+all - every response is byte-identical at 7,941 bytes. So
+`?brand=34&mode=map` with nothing else attached returns the brand's whole list,
+and none of the `country_iseadgg_centroids` machinery is needed. The URL in the
+spider carries no magic coordinates for that reason.
+
+**Both stores are stated "Temporary Closed", so by its own locator Grabbagreen
+has no operating restaurant right now.** `StatusName` is "Temporary Closed" and
+`StoreStatusId` is "TC" on each. They are collected rather than dropped, with
+`set_closed(DAYS)` rendering `opening_hours` as `Mo-Su closed`: AGENTS.md says to
+use `end_date` or `set_closed()` rather than a `disused:` prefix, and a temporary
+closure is not an end date, while `set_closed`'s own docstring is for days a
+location "stated they are closed, as opposed to simply not provided". The
+upstream Kahala spiders go the other way and drop non-operating stores -
+`blimpie_us` skips "Coming Soon", and `hartig_drug_us`, `laura_secord_ca`,
+`kia_au` and others return early on "permanently closed". Dropping them here
+would have produced a spider that collects nothing every month and trips the
+workflow's empty-run check, which is the reason `carmines` is off `spiders.txt`;
+collecting them with the closure stated keeps the two addresses, which is the
+part a monthly location run actually wants. **That is a judgement call and it is
+one line to reverse** - skip on `StoreStatusId == "TC"` instead - so say the word
+if the branch would rather publish nothing than publish a closed restaurant.
+
+On how permanent that closure is, the honest answer is that nothing readable
+says. MTY announced in July 2026 that it would close 68 underperforming
+corporate locations across its brands, which fits the picture but names no
+Grabbagreen store, and no public reporting confirms either of these two as gone
+for good. So the status is recorded exactly as the brand publishes it rather
+than upgraded to permanent.
+
+`branch` is set only when `Name` holds no digits. That field is free text: on
+Temple it is "Heritage Center", the shopping centre, which is worth keeping, and
+on Killeen it is "TX Killeen - 2802 W Stan Schlueter Loop 76549", which is the
+address again. That is `blimpie_us`'s reasoning in one line rather than its
+nineteen-line static helper, and it happens to be exactly right on both.
+
+`DictParser` does nearly all the rest - `ref` from `StoreId`, the pin, city,
+state, postcode and phone. `Address` lands in `addr_full`, which is popped in
+favour of `street_address` because it is a street line rather than a full
+address. Killeen's value has a leading space, which `CleanStringsPipeline`
+removes, so there is no manual strip.
+
+`reverse_geocoder` answers Morgans Point Resort for Temple and Fort Hood for
+Killeen, neither of them the stated city, which is the `walnut_grill_us` pattern
+of the dataset holding a neighbour instead; both are in Bell County, Texas and
+each pin sits a few kilometres from its city centre on the side its address
+says. `cuisine` is `salad`, which three upstream spiders already use, and the
+category is `FAST_FOOD` because the site describes itself as "a quick service
+restaurant".
 
 `native_foods_us` collects two restaurants: Glendale, Colorado and Palm Springs,
 California. It is the sixth spider on this branch to carry a `brand_wikidata`,
