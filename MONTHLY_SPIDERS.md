@@ -141,6 +141,7 @@ project's own software, not as a data pipeline.
 | `cactus_restaurants_us` | 6 | 2026-11-10 |
 | `cafe_hollander_us` | 5 | 2026-11-05 |
 | `carmines` | 6 | never run whole; gated, see below |
+| `cinema_cafe_us` | 5 | 2026-11-11 |
 | `copper_river_grill_us` | 5 | 2026-11-05 |
 | `duckworths_grill_and_taphouse_us` | 5 | 2026-11-06 |
 | `european_street_cafe_us` | 3 | 2026-11-10 |
@@ -864,6 +865,76 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`cinema_cafe_us` collects five cinemas in Virginia - Chester, south of Richmond,
+and four in Hampton Roads - and is **the first cinema on this branch**, which
+already carries massage, spa, clothing and tanning alongside the restaurants.
+Cinema Cafe serves a full menu in the auditorium, but it is tagged
+`amenity=cinema`, which is what it is. Nothing
+upstream covers `cinemacafe.com` or the name, NSI holds no "cinema cafe" entry,
+and Wikidata was still rate-limiting, so `brand_wikidata` is omitted.
+
+robots.txt is a **fourth shape for this branch: zero bytes.** Both hosts answer
+`/robots.txt` with `200`, `text/plain` and an empty body. An empty file states no
+rule and therefore forbids nothing, which `protego` agrees with for every agent.
+That is distinct from the three already recorded here - an orphaned `Crawl-delay`
+above any agent line, a file whose only content is Cloudflare content-signal
+comments, and a challenge served in place of the file.
+
+**Upstream had already solved this site, under another brand.** The site is a
+Gatsby build on Webedia Movies Pro, and `bb_theatres_us` in `origin/master` is
+the same platform down to the field names: `staticQueryHashes` in a stable
+`page-data.json`, a theatre list in `/page-data/sq/d/<hash>.json` under
+`allTheater`, and `practicalInfo` holding the address, pin, phone, images and a
+`closed` flag. This spider follows it rather than inventing a second approach.
+Worth remembering for any other cinema chain whose assets come from
+`cms-assets.webediamovies.pro`.
+
+**The hash is why the spider makes sixteen requests instead of one.** The theatre
+list lives at `/page-data/sq/d/2506275789.json` today, but that number is a hash
+of the site's GraphQL queries and moves when they change, so hardcoding it would
+leave a spider that silently 404s after a rebuild. Instead the spider reads
+`staticQueryHashes` off `/page-data/locations/page-data.json`, asks for all
+fifteen, and returns early from the fourteen that are about something else. No
+sitemap exists to help: `/sitemap.xml`, `/sitemap_index.xml` and
+`/wp-sitemap.xml` all answer `200` with the application shell, which is the
+Gatsby catch-all rather than a sitemap.
+
+**Two static queries carry `allTheater` and one of them is a trap.** Query
+`1176061465` lists the same five theatres with nothing on them but `id` and
+`ticketingProvider`. Both results reach the parser, both carry the same five
+refs, and `DuplicatesPipeline` keeps whichever arrives first - so without a
+guard the run could publish five bare records with no address at all, and which
+one won would depend on request ordering. The spider skips any theatre with no
+`practicalInfo`, which settles it.
+
+**The social links are brand-wide and are not filed.** `practicalInfo.links`
+offers Facebook, Instagram, Twitter and YouTube per theatre, and all five state
+the same four accounts - `facebook.com/cinemacafeva` and the rest - so none is
+written. Counting distinct values across the five is what showed it: one
+Facebook, one Instagram, five phone numbers. `email` is null on all five.
+`images` is genuinely per-theatre, present on three of the five and omitted on
+the other two.
+
+`branch` drops the city that the name repeats after a comma: the source states
+"Edinburgh, Chesapeake", "Greenbrier Mall, Chesapeake", "Kemps River, VA Beach"
+and "Pembroke Meadows, VA Beach", and `addr:city` already carries Chesapeake and
+Virginia Beach. Splitting on the first comma gives Edinburgh, Greenbrier Mall,
+Kemps River and Pembroke Meadows, which is exactly what each theatre's own URL
+slug calls it. `bb_theatres_us` keeps the whole name, but its names carry no such
+suffix. `screen` is the count of the `screens` array - 9, 9, 4, 7 and 3 - which
+is what five upstream cinema spiders do.
+
+**`reverse_geocoder` answers a different state for one of them, and the pin is
+still right.** Edinburgh's pin comes back as Moyock, North Carolina. The pin sits
+at latitude 36.645 and the Virginia-North Carolina border runs at 36.5407, so it
+is a hundred metres shy of eleven kilometres inside Virginia; it is simply 14.3
+km from Moyock and 19.8 km from Chesapeake's own centroid, because southern
+Chesapeake is thinly covered in that dataset and the city's centre is far to the
+north. The two Virginia Beach cinemas answer Chesapeake for the same reason.
+Chester answers Chester, Chesterfield County, and the theatre's own description -
+"Located off of Route 1, south of Richmond" - agrees. All five pins are north of
+the state line.
 
 `matt_the_millers_tavern_us` collects two restaurants in Ohio, Dublin and West
 Chester, and is **26 lines, the third shortest spider on this branch** after
