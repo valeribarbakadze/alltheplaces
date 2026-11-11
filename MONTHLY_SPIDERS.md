@@ -158,6 +158,7 @@ project's own software, not as a data pipeline.
 | `kirbys_steakhouse_us` | 4 | 2026-11-10 |
 | `llywelyns_pub_us` | 3 | 2026-11-11 |
 | `mannys_chophouse_us` | 2 | 2026-11-11 |
+| `matt_the_millers_tavern_us` | 2 | 2026-11-11 |
 | `merrimans_us` | 4 | 2026-11-11 |
 | `native_foods_us` | 2 | 2026-11-11 |
 | `new_orleans_hamburger_and_seafood_us` | 5 | 2026-11-09 |
@@ -863,6 +864,77 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`matt_the_millers_tavern_us` collects two restaurants in Ohio, Dublin and West
+Chester, and is **26 lines, the third shortest spider on this branch** after
+`tortas_manantial_us` at 21 and `cactus_restaurants_us` at 25 - because for once
+the source does the work. Nothing
+upstream covers `mtmtavern.com` or the name. NSI holds six "miller" brands -
+Miller Paint, Millers, Herman Miller, Bill Miller Bar-B-Q, Miller's Ale House
+and Miller & Carter - and none of them is this one, so no QID was borrowed and
+Wikidata was still rate-limiting, so `brand_wikidata` is omitted.
+
+robots.txt is `User-Agent: *` and a bare `Disallow:` with no value, which is the
+oldest way of saying everything is allowed, and `protego` reads it that way for
+every agent with no crawl delay.
+
+**The structured data is complete and per-restaurant, which is rare on this
+branch.** Each location page carries a `Restaurant` inside its `@graph` holding a
+full `PostalAddress`, a `geo` pair, its own telephone, a four-rule
+`openingHoursSpecification` and its own photograph. So `SitemapSpider` plus
+`StructuredDataSpider` reads the lot, and `post_process_item` only has to drop
+the name, set the branch and apply the category. `wanted_types` was tried and
+then removed: `Restaurant` is already in `StructuredDataSpider`'s defaults and
+the output was byte-identical without it.
+
+**Two things the first run got wrong, both worth recording.**
+
+The first was `contact:facebook`, which came out as
+`https://www.facebook.com/MTMTavern/` on both records - one brand account linked
+from every page footer, picked up by `search_for_facebook`, which defaults on and
+searches the whole response. It is a per-store field on the face of it and was
+brand-wide in fact, so `search_for_facebook = False`. Note the `Restaurant`
+block's own `sameAs` is clean: it holds a `share.google` link and a Yelp profile,
+both genuinely per-restaurant, and neither is a field this spider keeps.
+
+The second was subtler and only visible in `@source_uri`. **Every page beneath a
+restaurant repeats that restaurant's whole `Restaurant` block** - the menus, the
+gallery, the reservations page, the happenings page - so a sitemap rule matching
+everything scraped 66 pages and produced the two records from
+`/west-chester/happenings/` and `/dublin/menus/brunch-lunch-combos/`, deduplicated
+down to two only by `DuplicatesPipeline` on the `@id`. The output was right and
+the provenance was nonsense. Narrowing `sitemap_rules` to single-segment paths,
+`^https://mtmtavern\.com/[^/]+/$`, reads each restaurant from its own page and
+cuts the crawl to 22 responses. That rule still names no city: `/dublin/` and
+`/west-chester/` match it, so would a third restaurant, and the dozen other pages
+at that level - `/careers/`, `/about-us/`, `/contact-us/` and the rest - state no
+`Restaurant` and yield nothing. `/contact-us/` is the one to watch there: it
+carries both postcodes in its text but no `Restaurant` block, so it cannot
+produce a phantom record.
+
+Both restaurants state the same schedule, `Mo-Th 11:00-22:00; Fr 11:00-23:00;
+Sa 10:00-23:00; Su 10:00-21:00`. Unlike `mannys_chophouse_us`, where the two
+pages word their identical hours differently and so prove they were read
+separately, these two are identical in wording as well - but each sits in its own
+page's own block beside its own address, pin and telephone, so they are two
+statements that happen to agree rather than one value copied twice.
+
+`reverse_geocoder` puts Dublin in Dublin, Franklin County, Ohio, and West Chester
+in Beckett Ridge, Butler County - a neighbouring settlement rather than the
+stated city, which is the `walnut_grill_us` pattern again, since West Chester is
+a township and the dataset holds the CDP next to it. Both are in the right county
+and within a few kilometres of the addresses.
+
+`branch` is the city, as on `iii_forks_us`; `name` is dropped because both pages
+state the brand rather than the restaurant. `brand` is "Matt the Miller's Tavern
+Steakhouse", which is what the `Organization`, the `WebSite` and both page titles
+call it; the monthly list and the domain say Matt the Miller's Tavern, which is
+what the file is named for - the same split as `flip_side_burger_us` and
+`mannys_chophouse_us`. `cuisine` is `steak_house` rather than the block's own
+`servesCuisine` of American, Steakhouse and Tavern, which has no single
+established equivalent. The per-restaurant `image` is kept; `hasMap` is a
+`g.page` or `goo.gl` short link on each and is not followed, which costs nothing
+because `geo` is already there.
 
 `mannys_chophouse_us` collects two steakhouses in Polk County, Florida: Haines
 City and Winter Haven. Nothing upstream covers `mannyschophouse.com` or the
