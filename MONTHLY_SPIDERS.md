@@ -144,6 +144,7 @@ project's own software, not as a data pipeline.
 | `copper_river_grill_us` | 5 | 2026-11-05 |
 | `duckworths_grill_and_taphouse_us` | 5 | 2026-11-06 |
 | `european_street_cafe_us` | 3 | 2026-11-10 |
+| `flip_side_burger_us` | 2 | 2026-11-11 |
 | `grabbagreen_us` | 2 | 2026-11-11 |
 | `granville_us` | 5 | 2026-11-06 |
 | `grotto_ristorante_us` | 4 | 2026-11-10 |
@@ -860,6 +861,91 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`flip_side_burger_us` collects two restaurants from a site that is one page
+long: Hudson, Ohio and Easton, which is in Columbus. Nothing upstream covers
+`flipsideburger.com` or the name - the nearest thing in `origin/master` is
+`flippin_pizza_us`, a different brand that upstream already carries - and Flip
+Side is absent from NSI, whose five "flip" entries are CoinFlip, Flippin' Pizza,
+Chigo x Flip and two Flip Outs, none of them this. Wikidata was rate-limiting
+this egress again by the time the check ran, so `brand_wikidata` is omitted
+rather than guessed.
+
+**robots.txt is the Squarespace shape, the one that looks like a refusal and is
+not.** Twenty-nine AI crawlers are listed on consecutive `User-agent:` lines -
+`anthropic-ai` and `ClaudeBot` among them, with GPTBot, CCBot, Bytespider and
+the rest - and then comes `User-agent: *` and the directives. Consecutive agent
+lines form one group, so all thirty share those directives and there is no
+`Disallow: /` anywhere; `protego` confirms `can_fetch` for every agent with no
+crawl delay. This is `european_street_cafe_us` again, and the lesson is the same
+one: read the directives, not the list. What the file does forbid is
+`?format=json` and the other Squarespace view parameters, which rules out the
+platform's JSON views; this spider has no need of them. The sitemap is declared
+properly and is still no help - five URLs, `/welcome`, `/home`,
+`/join-our-team-copy` and two gift-card pages, and no locations page at all.
+
+**The whole site is one page**, so the "Locations" item in the navigation is an
+anchor into a Squarespace section rather than a URL. The spider reads `sqs-row`
+blocks that carry an `h2` and keeps only those whose paragraphs hold an address.
+Three other rows match that heading selector - the welcome text, which matches
+twice because the rows nest, and the ORDER ONLINE links - and they are skipped by
+the absence of an address rather than by a Squarespace block id, so the section
+can be reordered or renamed without breaking the spider.
+
+**The two addresses are punctuated differently and one pattern reads both.**
+Hudson states "49 Village Way, Hudson OH 44236", with a comma after the street
+and none before the state; Easton states "3945 Easton Station Columbus, Ohio
+43219", with no comma after the street and the state spelled out. The city group
+is deliberately one capitalised word before the state, which is what makes the
+Easton line come out right: a looser group matches "Easton Station Columbus" as
+the city and leaves "3945" as the street, since the regex takes the leftmost
+match it can. `StateCodeCleanUpPipeline` turns "Ohio" into `OH`.
+
+**Hudson has no hours on purpose, and a typo is the reason.** Its weekday rule
+reads `Mon-Thurs 11:300pm-9:00pm`. `add_ranges_from_string` returns nothing for
+that - silently, no exception, the same failure mode that caught
+`rams_head_group_us` on "Every Day" and `pietros_pizza_us` on "Everyday" - while
+the Fri-Sat and Sun rules beside it parse fine. Keeping those two would have
+published Hudson as `Fr-Sa 11:30-22:00; Su 11:30-20:00`, which states the
+restaurant is closed Monday to Thursday and is worse than saying nothing. So the
+spider checks that every rule the page states actually changed the parsed result,
+and drops `opening_hours` entirely when one did not. That is a general rule
+rather than a repair of this store: AGENTS.md forbids special-case fix-ups of
+individual stores, and rewriting "11:300pm" as 11:30 would be precisely that.
+Easton's three rules all parse, to `Mo-Sa 11:30-21:00; Su 11:30-19:00`.
+
+Counting the rendered rules would not have detected it, which is worth knowing
+for the next source like this. Easton's three rules collapse into two because
+Mon-Thurs and Fri-Sat share their times and render as `Mo-Sa`, and Hudson's two
+surviving rules also render as two - so both lines show two rules either way, and
+only a per-rule check tells them apart.
+
+**Neither restaurant gets coordinates.** The page carries no map link of any
+kind, and its only `ld+json` is a brand-level `WebSite` holding a logo and no
+address, so there is nothing to read a pin from and both records carry a null
+geometry.
+
+**There is a third restaurant and the site does not list it.** One sentence in
+the gift-card section reads "GIFT cards for easton and breckenridge locations can
+be ordered directly from store or over the phone", and Breckenridge, Colorado has
+a Toast ordering page of its own as "Flipside Burger Breckenridge" beside the two
+Ohio ones. The Locations section names only Hudson and Easton; there is no
+Breckenridge heading, menu or link, and no address for it anywhere on the brand's
+site. So this spider publishes two of three, and nothing was taken from the
+aggregator listings that do carry a Breckenridge address, because AGENTS.md
+prefers the brand's own site over aggregators and the brand's own site does not
+state it. If a third row ever appears in that section the spider collects it with
+no change; it is also possible the omission means Breckenridge has closed and the
+gift-card sentence is stale, which the brand's own pages do not settle either way.
+
+`brand` is "Flip Side Burgers & Shakes", the name in the page title and in the
+site's own `ld+json`. Three spellings are in play - the prose calls it "Flip
+Side" throughout, the domain is `flipsideburger.com`, and the monthly list calls
+it Flip Side Burger - so the file is named for the list and the domain while
+`brand` follows the brand's own formal name. Both restaurants' Toast links carry
+their street addresses in the slug, `flip-side-49-village-way` and
+`flipside-easton-3945-easton-station`, which corroborates both addresses
+independently of the page text.
 
 `grabbagreen_us` collects two restaurants, both in Bell County, Texas: Temple and
 Killeen. Nothing upstream covers `grabbagreen.com` or the name, and the brand is
