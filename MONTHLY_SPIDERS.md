@@ -156,6 +156,7 @@ project's own software, not as a data pipeline.
 | `james_coney_island_us` | 5 | 2026-11-07 |
 | `karinas_mexican_seafood_us` | 4 | 2026-11-06 |
 | `kirbys_steakhouse_us` | 4 | 2026-11-10 |
+| `llywelyns_pub_us` | 3 | 2026-11-11 |
 | `merrimans_us` | 4 | 2026-11-11 |
 | `native_foods_us` | 2 | 2026-11-11 |
 | `new_orleans_hamburger_and_seafood_us` | 5 | 2026-11-09 |
@@ -861,6 +862,85 @@ Township are unincorporated and absent from its dataset. The pins are 14 to 32
 miles apart and sit north, west and south of Pittsburgh, which is how the brand
 describes itself. Three restaurants is below the ten upstream would ask for, and
 that bar does not apply on this branch.
+
+`llywelyns_pub_us` collects three pubs across two sites: Webster Groves and
+Historic St. Charles from `llywelynspub.com`, and Lee's Summit from
+`llywelynspubleessummit.com`. Nothing upstream covers either domain or the name,
+and NSI has no entry matching "llywel" at all. Wikidata was still rate-limiting
+this egress, so `brand_wikidata` is omitted rather than guessed.
+
+robots.txt is byte-identical on both hosts and on the apex of the first -
+`User-agent: *`, `Allow: /`, and `Disallow: /ecommerce/checkout/` - which
+`protego` reads as permissive for every agent with no crawl delay. Both sites are
+SpotOn builds, which is why they match.
+
+**The brand is three pubs and its own copy says two.** The fiftieth-anniversary
+text reads "Join us in Webster Groves or Historic St. Charles" and the patio
+banner says "Two chill patios. Two great locations", while the same page's
+navigation and ordering links carry Lee's Summit as well and a "Visit our KC
+location" link points off to its own domain. Reading the prose would have
+published two of three. The spider follows that link by its anchor text, so the
+third pub comes in on the same crawl. The three SpotOn ordering tenants agree
+with that count - `lees-summit-mo`, `saint-charles-mo` and `webster-groves-mo` -
+and Lee's Summit sits under a different tenant prefix from the other two, which
+reads as separate ownership.
+
+The Central West End pub, where the brand started in 1975, is gone. The site
+tells its story at length and in the past tense and states no address for it
+anywhere, so nothing was collected or invented for it. Worth knowing if a count
+of four ever turns up from another source.
+
+**Each St. Louis pub publishes a Google Maps embed, and the scoping matters.**
+`url_to_coords` reads a `maps/embed?pb=` URL through its embed branch, taking the
+`!2d` and `!3d` pair as longitude then latitude. Both embeds sit inside one
+`<section>`, and `_get_possible_links` searches the whole of whatever it is
+handed, so `extract_google_position` is called on each `ly-col` column rather
+than on the response - unscoped, both pubs would have been given Webster's pin.
+`reverse_geocoder` answers Webster Groves in St. Louis County and Saint Charles
+in St. Charles County, each within a few hundred metres of its city centroid.
+Lee's Summit publishes no map of any kind and carries a null geometry.
+
+**The shared email is not filed.** Both St. Louis pubs state
+`info@llywelynspub.com` - the same address twice, which is a brand mailbox rather
+than either pub's - so neither record carries an email. Lee's Summit states
+`kansascity@llywelynspub.com`, which is its own, and that one is kept.
+
+**Hours exist for Lee's Summit only, and they run past midnight.** Its page
+states "Sunday to Tuesday 11AM - 12AM", "Wednesday 11AM - 12:30AM" and "Thursday
+to Saturday 11AM - 1:30AM". `add_ranges_from_string` takes "to" as a range
+delimiter and splits each post-midnight close onto the following day, giving
+`Mo-We 11:00-24:00; Th 00:00-00:30,11:00-24:00; Fr-Su 00:00-01:30,11:00-24:00` -
+so Thursday carries Wednesday's extra half hour and Sunday carries Saturday's
+ninety minutes, which is the precise reading rather than a rounding. All three
+rules parsed. The two St. Louis pubs state no hours anywhere on the site, so they
+have none; a `set_closed` would have been a fabrication and was not used.
+
+**Lee's Summit's address is filed whole on purpose.** Its block states "301 SE
+Douglas St Lees Summit," and "MO 64063" on two lines, with nothing at all
+between the street and the city, so splitting them would be guesswork - the city
+is two words and no delimiter marks where it starts. `merge_address_lines` joins
+the lines into `addr_full` and the state and postcode come off the second line,
+which is unambiguous. That is the `merrimans_us` approach. The two St. Louis pubs
+do state their street and their "City, ST ZIP" on separate lines, so those two
+get a full breakdown, and the records are deliberately uneven for that reason.
+
+That block is read by its own labels - `Address:`, `Phone:`, `Email:`,
+`Open Hours:` - rather than by position, because the page offers no map embed to
+anchor on and the labels are the part the page actually commits to.
+
+No `cuisine` is set. The brand calls its food "American Celtic-inspired fare" and
+"traditional Irish fare", and no spider in `locations/spiders/` sets a cuisine of
+`irish`, `celtic` or anything else pub-shaped, so inventing one for three records
+was not worth it and `amenity=pub` carries it alone, as it does for most upstream
+pub spiders.
+
+`branch` is the `h4` heading on the two St. Louis pubs, "Webster" and
+"St. Charles" - the brand's own shortening, with the full locality kept in
+`addr:city` as Webster Groves. The navigation spells it "Webster Grooves" in one
+place, which is a typo on the site and is not used. Lee's Summit gets no branch:
+its page states no label for itself and the hub calls it only "our KC location",
+so neither page offers a branch name, and its `ref` is its URL for the same
+reason.
 
 `flip_side_burger_us` collects two restaurants from a site that is one page
 long: Hudson, Ohio and Easton, which is in Columbus. Nothing upstream covers
