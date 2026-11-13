@@ -55,6 +55,7 @@ new_orleans_hamburger_and_seafood_us
 nrgize_us
 on_the_border_us
 pietros_pizza_us
+pizza_shoppe_us
 raffertys_pizza_us
 rams_head_group_us
 remke_markets_us
