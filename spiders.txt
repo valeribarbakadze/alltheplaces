@@ -27,6 +27,7 @@ eatzis_us
 european_street_cafe_us
 felipes_mexican_taqueria_us
 flip_side_burger_us
+friendly_toast_us
 frullati_us
 grabbagreen_us
 granville_us
