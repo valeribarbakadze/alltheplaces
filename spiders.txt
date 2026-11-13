@@ -13,6 +13,7 @@ acme_oyster_house_us
 aquarium_restaurants_us
 arirang_hibachi_steakhouse_us
 bad_brads_bbq_us
+bodybrite_ca_us
 bulldog_ale_house_us
 burgers_and_beer_us
 cactus_restaurants_us
