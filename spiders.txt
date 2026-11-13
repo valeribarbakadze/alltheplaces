@@ -66,6 +66,7 @@ seoul_taco_us
 snappy_salads_us
 stefaninas_pizzeria_us
 strip_house_us
+studio_movie_grill_fandango_us
 tamollys_mexican_kitchen
 the_palm
 the_post_sports_bar_and_grill_us
