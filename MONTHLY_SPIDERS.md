@@ -77,6 +77,10 @@ is the maintained one from then on.
 
 ## Running it
 
+The November 13 free-source merchant batch has a separate runner and coverage
+notes in [FREE_MERCHANT_SOURCES.md](FREE_MERCHANT_SOURCES.md). Its 16 live-tested
+collectors are also included in `spiders.txt`.
+
 One spider:
 
 ```sh
@@ -3171,4 +3175,3 @@ or `grizzly_peak` in `origin/master`, and no Wikidata or NSI entry by domain or
 label - and the Dexter facts above are enough to start from. The landing page's
 own title and description still name Detroit, which the page itself no longer
 links, so expect the four to be the current set and Detroit to be gone.
-

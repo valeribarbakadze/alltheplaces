@@ -1,0 +1,98 @@
+[
+  {
+    "merchant_id": "1528991",
+    "spider": "great_steak_us",
+    "coverage": "Merchant locator",
+    "notes": "Includes source-marked temporary closures."
+  },
+  {
+    "merchant_id": "1528988",
+    "spider": "frullati_us",
+    "coverage": "Merchant locator",
+    "notes": "Merchant-hosted Kahala feed."
+  },
+  {
+    "merchant_id": "1528997",
+    "spider": "nrgize_us",
+    "coverage": "Merchant locator",
+    "notes": "Includes source-marked temporary closures."
+  },
+  {
+    "merchant_id": "1534549",
+    "spider": "great_greek_grill_us",
+    "coverage": "US ordering network; completeness unverified",
+    "notes": "Ordering schedules are omitted because they are not dining hours."
+  },
+  {
+    "merchant_id": "1534267",
+    "spider": "friendly_toast_us",
+    "coverage": "Merchant directory and ordering network",
+    "notes": "Dining hours not inferred from ordering schedules."
+  },
+  {
+    "merchant_id": "1530230",
+    "spider": "bodybrite_ca_us",
+    "coverage": "Merchant map feed",
+    "notes": "Refreshes the public nonce on every run. The feed includes 15 US and 2 Canadian branches."
+  },
+  {
+    "merchant_id": "1531178",
+    "spider": "pizza_shoppe_us",
+    "coverage": "Merchant map feed",
+    "notes": "Read-only WordPress location request."
+  },
+  {
+    "merchant_id": "1567447",
+    "spider": "fresco_y_mas_snap_us",
+    "coverage": "Partial: SNAP-authorized retailers",
+    "notes": "Government feed may lag openings. Authorization date is not an opening date."
+  },
+  {
+    "merchant_id": "1556005",
+    "spider": "to_haas_tire_and_auto_us",
+    "coverage": "Merchant location directory",
+    "notes": "Re-enumerates branch pages on every run."
+  },
+  {
+    "merchant_id": "1544256",
+    "spider": "jalapeno_tree_us",
+    "coverage": "Merchant location directory",
+    "notes": "Restaurant JSON-LD; Tyler coordinates come from its published map embed."
+  },
+  {
+    "merchant_id": "1534942",
+    "spider": "studio_movie_grill_fandango_us",
+    "coverage": "Ticketing partner; completeness unverified",
+    "notes": "Fandango MovieTheater records. Not mall-center coordinates."
+  },
+  {
+    "merchant_id": "1529888",
+    "spider": "willie_jewells_us",
+    "coverage": "Merchant page with conflicting sections",
+    "notes": "Address-only. Peachtree City appears only in a secondary section and requires review."
+  },
+  {
+    "merchant_id": "1529720",
+    "spider": "hash_house_a_go_go_us",
+    "coverage": "Merchant location directory",
+    "notes": "Addresses only; source does not publish numeric coordinates here."
+  },
+  {
+    "merchant_id": "1533567",
+    "spider": "cool_hand_lukes_us",
+    "coverage": "Merchant location directory",
+    "notes": "Addresses only. Nuanced brunch/dining schedules omitted."
+  },
+  {
+    "merchant_id": "1529682",
+    "spider": "el_gaucho_us",
+    "coverage": "Merchant restaurant directory",
+    "notes": "El Gaucho-branded locations only; excludes sister concepts. Addresses only."
+  },
+  {
+    "merchant_id": "1552146",
+    "spider": "gofer_ice_cream_us",
+    "coverage": "Merchant location directory",
+    "notes": "Address-only: different towns reuse the same embedded map, so coordinates are withheld. Seasonal shops may be listed."
+  }
+]
