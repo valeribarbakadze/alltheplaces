@@ -33,6 +33,7 @@ flip_side_burger_us
 fresco_y_mas_snap_us
 friendly_toast_us
 frullati_us
+gofer_ice_cream_us
 grabbagreen_us
 granville_us
 great_greek_grill_us
